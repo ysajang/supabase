@@ -8,6 +8,7 @@ import {
   DialogSection,
   DialogSectionSeparator,
   DialogTitle,
+  Input_Shadcn_,
   Label_Shadcn_,
   Select_Shadcn_,
   SelectContent_Shadcn_,
@@ -20,6 +21,8 @@ import {
 import {
   BUILDING_MAX_LENGTH,
   BUILDING_PLACEHOLDER,
+  formatHeardFromAnswer,
+  HEARD_FROM_FOLLOW_UP_BY_VALUE,
   HEARD_FROM_OPTIONS,
 } from './OnboardingSurvey.constants'
 
@@ -45,7 +48,9 @@ export function OnboardingSurveyDialog({
   title = 'Help us tailor your setup',
 }: OnboardingSurveyDialogProps) {
   const [heardFrom, setHeardFrom] = useState('')
+  const [heardFromDetail, setHeardFromDetail] = useState('')
   const [building, setBuilding] = useState('')
+  const heardFromFollowUp = HEARD_FROM_FOLLOW_UP_BY_VALUE[heardFrom]
 
   const handleOpenChange = (nextOpen: boolean) => {
     if (!nextOpen && open && !isSubmitting) {
@@ -58,7 +63,7 @@ export function OnboardingSurveyDialog({
 
   const handleSubmit = async () => {
     await onSubmit({
-      heard_from: heardFrom,
+      heard_from: formatHeardFromAnswer(heardFrom, heardFromDetail),
       building,
     })
   }
@@ -77,7 +82,13 @@ export function OnboardingSurveyDialog({
             <Label_Shadcn_ htmlFor="onboarding-survey-heard-from">
               Where did you hear about us?
             </Label_Shadcn_>
-            <Select_Shadcn_ value={heardFrom} onValueChange={setHeardFrom}>
+            <Select_Shadcn_
+              value={heardFrom}
+              onValueChange={(value) => {
+                setHeardFrom(value)
+                if (!HEARD_FROM_FOLLOW_UP_BY_VALUE[value]) setHeardFromDetail('')
+              }}
+            >
               <SelectTrigger_Shadcn_ id="onboarding-survey-heard-from" className="w-full">
                 <SelectValue_Shadcn_ placeholder="Select an option" />
               </SelectTrigger_Shadcn_>
@@ -89,6 +100,14 @@ export function OnboardingSurveyDialog({
                 ))}
               </SelectContent_Shadcn_>
             </Select_Shadcn_>
+            {heardFromFollowUp && (
+              <Input_Shadcn_
+                aria-label={heardFromFollowUp.label}
+                value={heardFromDetail}
+                placeholder={heardFromFollowUp.placeholder}
+                onChange={(event) => setHeardFromDetail(event.target.value)}
+              />
+            )}
           </div>
 
           <div className="flex flex-col gap-y-2">
@@ -103,9 +122,10 @@ export function OnboardingSurveyDialog({
             <Textarea
               id="onboarding-survey-building"
               value={building}
+              rows={3}
               maxLength={BUILDING_MAX_LENGTH}
               placeholder={BUILDING_PLACEHOLDER}
-              className="min-h-24"
+              className="resize-none"
               onChange={(event) => setBuilding(event.target.value)}
             />
           </div>

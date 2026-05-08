@@ -10,9 +10,59 @@ export const HEARD_FROM_OPTIONS = [
   { value: 'other', label: 'Other' },
 ] as const
 
+export type HeardFromOptionValue = (typeof HEARD_FROM_OPTIONS)[number]['value']
+
+export const HEARD_FROM_OTHER_VALUE = 'other'
+
+export const HEARD_FROM_FOLLOW_UP_BY_VALUE: Record<
+  string,
+  { label: string; placeholder: string } | undefined
+> = {
+  social_media: {
+    label: 'Which platform?',
+    placeholder: 'e.g. X, Reddit, LinkedIn',
+  },
+  ai_tool: {
+    label: 'Which AI tool?',
+    placeholder: 'e.g. ChatGPT, Claude, Cursor',
+  },
+  youtube: {
+    label: 'Which channel or video?',
+    placeholder: 'e.g. Supabase, Fireship, Theo',
+  },
+  blog_article: {
+    label: 'Which blog or article?',
+    placeholder: 'Paste a title, site, or link',
+  },
+  conference: {
+    label: 'Which conference?',
+    placeholder: 'e.g. Launch Week, PostgresConf, local meetup',
+  },
+  podcast: {
+    label: 'Which podcast?',
+    placeholder: 'e.g. Syntax, Changelog, Software Engineering Daily',
+  },
+  other: {
+    label: 'Tell us where',
+    placeholder: 'Tell us where',
+  },
+}
+
+export function formatHeardFromAnswer(value?: string, detail?: string) {
+  const trimmedValue = value?.trim()
+  const trimmedDetail = detail?.trim()
+
+  if (!trimmedValue) return trimmedDetail
+  if (!trimmedDetail) return trimmedValue
+  if (trimmedValue === HEARD_FROM_OTHER_VALUE) return trimmedDetail
+
+  return `${trimmedValue}: ${trimmedDetail}`
+}
+
 export const BUILDING_MAX_LENGTH = 500
 
-export const BUILDING_PLACEHOLDER = 'e.g. an AI chatbot, a SaaS app, a mobile game backend'
+export const BUILDING_PLACEHOLDER =
+  'e.g. a founder copilot, a real-time party game, or the internal tool your team opens every morning'
 
 export type OnboardingSurveySurface = 'building_state' | 'project_home' | 'org_form'
 

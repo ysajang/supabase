@@ -1,13 +1,19 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import type { ReactNode } from 'react'
+import type { ComponentProps, ReactNode } from 'react'
 import { describe, expect, it, vi } from 'vitest'
 
 import { BUILDING_MAX_LENGTH } from './OnboardingSurvey.constants'
 import { OnboardingSurveyDialog } from './OnboardingSurveyDialog'
 
+type ButtonMockProps = ComponentProps<'button'> & { loading?: boolean }
+type SelectMockProps = {
+  children: ReactNode
+  onValueChange: (value: string) => void
+}
+
 vi.mock('ui', () => ({
-  Button: ({ children, loading, ...props }: any) => (
+  Button: ({ children, loading, ...props }: ButtonMockProps) => (
     <button {...props} disabled={props.disabled || loading}>
       {children}
     </button>
@@ -20,12 +26,21 @@ vi.mock('ui', () => ({
   DialogSection: ({ children }: { children: ReactNode }) => <div>{children}</div>,
   DialogSectionSeparator: () => <hr />,
   DialogTitle: ({ children }: { children: ReactNode }) => <h2>{children}</h2>,
-  Label_Shadcn_: ({ children, ...props }: any) => <label {...props}>{children}</label>,
-  Select_Shadcn_: ({ children, onValueChange }: any) => (
+  Input_Shadcn_: (props: ComponentProps<'input'>) => <input {...props} />,
+  Label_Shadcn_: ({ children, ...props }: ComponentProps<'label'>) => (
+    <label {...props}>{children}</label>
+  ),
+  Select_Shadcn_: ({ children, onValueChange }: SelectMockProps) => (
     <div>
       {children}
       <button type="button" onClick={() => onValueChange('ai_tool')}>
         AI tool
+      </button>
+      <button type="button" onClick={() => onValueChange('conference')}>
+        Conference
+      </button>
+      <button type="button" onClick={() => onValueChange('other')}>
+        Other
       </button>
     </div>
   ),
@@ -33,7 +48,7 @@ vi.mock('ui', () => ({
   SelectItem_Shadcn_: ({ children }: { children: ReactNode }) => <div>{children}</div>,
   SelectTrigger_Shadcn_: ({ children }: { children: ReactNode }) => <div>{children}</div>,
   SelectValue_Shadcn_: ({ placeholder }: { placeholder?: string }) => <span>{placeholder}</span>,
-  Textarea: (props: any) => <textarea {...props} />,
+  Textarea: (props: ComponentProps<'textarea'>) => <textarea {...props} />,
 }))
 
 describe('OnboardingSurveyDialog', () => {
@@ -73,6 +88,52 @@ describe('OnboardingSurveyDialog', () => {
 
     const input = screen.getByLabelText('What are you building?')
     expect(input).toHaveAttribute('maxLength', String(BUILDING_MAX_LENGTH))
+  })
+
+  it('submits source details when a follow-up option is selected', async () => {
+    const onSubmit = vi.fn()
+
+    render(
+      <OnboardingSurveyDialog
+        open
+        onDismiss={vi.fn()}
+        onOpenChange={vi.fn()}
+        onSkip={vi.fn()}
+        onSubmit={onSubmit}
+      />
+    )
+
+    await userEvent.click(screen.getByRole('button', { name: 'Conference' }))
+    await userEvent.type(screen.getByLabelText('Which conference?'), 'Launch Week')
+    await userEvent.click(screen.getByRole('button', { name: 'Submit' }))
+
+    expect(onSubmit).toHaveBeenCalledWith({
+      heard_from: 'conference: Launch Week',
+      building: '',
+    })
+  })
+
+  it('submits custom details when other is selected', async () => {
+    const onSubmit = vi.fn()
+
+    render(
+      <OnboardingSurveyDialog
+        open
+        onDismiss={vi.fn()}
+        onOpenChange={vi.fn()}
+        onSkip={vi.fn()}
+        onSubmit={onSubmit}
+      />
+    )
+
+    await userEvent.click(screen.getByRole('button', { name: 'Other' }))
+    await userEvent.type(screen.getByLabelText('Tell us where'), 'Launch Week')
+    await userEvent.click(screen.getByRole('button', { name: 'Submit' }))
+
+    expect(onSubmit).toHaveBeenCalledWith({
+      heard_from: 'Launch Week',
+      building: '',
+    })
   })
 
   it('allows the user to skip', async () => {
