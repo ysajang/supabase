@@ -92,7 +92,7 @@ export function OnboardingSurveyEmbeddedPrompt({
 
       <div
         className={cn(
-          'relative mx-auto flex h-full w-full max-w-sm flex-col justify-center transition-opacity duration-200 ease-out',
+          'relative mx-auto my-auto flex h-full w-full max-w-sm flex-col justify-center transition-opacity duration-200 ease-out',
           isContentVisible ? 'opacity-100' : 'opacity-0',
           isSubmitted ? 'items-center text-center' : 'gap-y-8'
         )}
