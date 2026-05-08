@@ -60,7 +60,7 @@ export function OnboardingSurveyEmbeddedPrompt({
   return (
     <div
       className={cn(
-        'relative flex flex-col items-stretch justify-end gap-y-8 overflow-hidden rounded-md border border-muted bg-surface-200/20 p-8',
+        'relative flex flex-col items-stretch justify-end gap-y-8 overflow-hidden rounded-md border border-muted bg-surface-200/20 p-12',
         className
       )}
     >
