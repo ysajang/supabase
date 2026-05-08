@@ -39,7 +39,7 @@ type OnboardingSurveyDialogProps = {
 
 export function OnboardingSurveyDialog({
   open,
-  description = 'Answer two optional questions so we can improve the first-run experience across Dashboard, CLI, and agents.',
+  description = 'Answer two optional questions so we can improve your Supabase experience.',
   isSubmitting = false,
   onDismiss,
   onOpenChange,

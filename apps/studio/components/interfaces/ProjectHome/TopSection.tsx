@@ -19,10 +19,10 @@ import { useIsOrioleDb, useSelectedProjectQuery } from '@/hooks/misc/useSelected
 import { DOCS_URL, PROJECT_STATUS } from '@/lib/constants'
 
 type TopSectionProps = {
-  showMockBuildingSurvey?: boolean
+  mockBuildingSurveyVariant?: 'dialog' | 'embedded'
 }
 
-export const TopSection = ({ showMockBuildingSurvey = false }: TopSectionProps) => {
+export const TopSection = ({ mockBuildingSurveyVariant }: TopSectionProps) => {
   const isOrioleDb = useIsOrioleDb()
   const { data: project } = useSelectedProjectQuery()
   const { data: organization } = useSelectedOrganizationQuery()
@@ -100,19 +100,11 @@ export const TopSection = ({ showMockBuildingSurvey = false }: TopSectionProps) 
           </div>
         </div>
         <div>
-          {showMockBuildingSurvey ? (
-            <div className="w-full min-h-[400px] md:min-h-[500px] rounded-md border border-muted bg-surface-100 p-6">
-              <div className="max-w-xl space-y-6">
-                <div className="space-y-1">
-                  <h2 className="text-base text-foreground">While you wait</h2>
-                  <p className="text-sm text-foreground-light">
-                    Your project is spinning up. Answer two optional questions while we prepare your
-                    database and API endpoints.
-                  </p>
-                </div>
-                <OnboardingSurveyInlinePrompt />
-              </div>
-            </div>
+          {mockBuildingSurveyVariant ? (
+            <OnboardingSurveyInlinePrompt
+              className="flex min-h-[400px] flex-col justify-center md:min-h-[500px]"
+              variant={mockBuildingSurveyVariant}
+            />
           ) : (
             <div
               className={cn(

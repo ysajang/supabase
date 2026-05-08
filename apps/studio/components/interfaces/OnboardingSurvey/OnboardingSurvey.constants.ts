@@ -83,6 +83,7 @@ export function shouldForceOnboardingSurveyPrompt({
     override === '1' ||
     override === 'true' ||
     override === surface ||
+    (surface === 'building_state' && override === 'building_state_inline') ||
     (surface === 'project_home' && (override === 'dialog' || override === 'toast'))
   )
 }

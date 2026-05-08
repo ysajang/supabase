@@ -107,11 +107,23 @@ describe('useOnboardingSurveyPrompt', () => {
     expect(result.current.shouldShowPrompt).toBe(false)
   })
 
-  it('can be forced for prototype testing', () => {
-    localStorageState.current = { status: 'dismissed', updatedAt: '2026-05-07T00:00:00.000Z' }
-    routerMock.setCurrentUrl('/project/project-ref?onboardingSurveyPrompt=building_state')
+  it.each(['building_state', 'building_state_inline'])(
+    'can be forced for prototype testing with %s',
+    (override) => {
+      localStorageState.current = { status: 'dismissed', updatedAt: '2026-05-07T00:00:00.000Z' }
+      routerMock.setCurrentUrl(`/project/project-ref?onboardingSurveyPrompt=${override}`)
 
-    const { result } = renderHook(() => useOnboardingSurveyPrompt({ surface: 'building_state' }))
+      const { result } = renderHook(() => useOnboardingSurveyPrompt({ surface: 'building_state' }))
+
+      expect(result.current.shouldShowPrompt).toBe(true)
+    }
+  )
+
+  it('can be forced for prototype testing on the project home surface', () => {
+    localStorageState.current = { status: 'dismissed', updatedAt: '2026-05-07T00:00:00.000Z' }
+    routerMock.setCurrentUrl('/project/project-ref?onboardingSurveyPrompt=project_home')
+
+    const { result } = renderHook(() => useOnboardingSurveyPrompt({ surface: 'project_home' }))
 
     expect(result.current.shouldShowPrompt).toBe(true)
   })

@@ -55,7 +55,13 @@ export const ProjectHome = () => {
     onboardingSurveyPromptOverride === 'dialog' ||
     onboardingSurveyPromptOverride === 'project_home'
   const shouldForceOnboardingSurveyBuildingState =
-    onboardingSurveyPromptOverride === 'building_state'
+    onboardingSurveyPromptOverride === 'building_state' ||
+    onboardingSurveyPromptOverride === 'building_state_inline'
+  const mockBuildingSurveyVariant = shouldForceOnboardingSurveyBuildingState
+    ? onboardingSurveyPromptOverride === 'building_state_inline'
+      ? 'embedded'
+      : 'dialog'
+    : undefined
   const isRecentlyCreatedProject =
     !!project?.inserted_at && dayjs(project.inserted_at).isAfter(dayjs().subtract(1, 'hour'))
   const shouldShowOnboardingSurveyToast =
@@ -119,7 +125,7 @@ export const ProjectHome = () => {
             isFullWidth
             className={cn(isPaused ? 'h-full flex justify-center p-0!' : 'pb-0')}
           >
-            <TopSection showMockBuildingSurvey={shouldForceOnboardingSurveyBuildingState} />
+            <TopSection mockBuildingSurveyVariant={mockBuildingSurveyVariant} />
           </ScaffoldSection>
         </ScaffoldContainer>
         {!isPaused && (
