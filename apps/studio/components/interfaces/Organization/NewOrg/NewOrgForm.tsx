@@ -659,7 +659,11 @@ export const NewOrgForm = ({
                       control={form.control}
                       name="heard_from"
                       render={({ field }) => (
-                        <FormItemLayout label="Where did you hear about us?" layout="horizontal">
+                        <FormItemLayout
+                          label="Where did you hear about us?"
+                          layout="horizontal"
+                          description="These are optional questions to help us improve your onboarding."
+                        >
                           <FormControl>
                             <div className="flex flex-col gap-y-2">
                               <Select_Shadcn_
@@ -705,11 +709,7 @@ export const NewOrgForm = ({
                       control={form.control}
                       name="building"
                       render={({ field }) => (
-                        <FormItemLayout
-                          label="What are you building?"
-                          layout="horizontal"
-                          description="These are optional questions to help us improve your onboarding."
-                        >
+                        <FormItemLayout label="What are you building?" layout="horizontal">
                           <FormControl>
                             <div className="flex flex-col gap-y-1">
                               <Textarea

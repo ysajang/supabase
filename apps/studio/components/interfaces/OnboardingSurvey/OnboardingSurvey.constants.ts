@@ -62,7 +62,7 @@ export function formatHeardFromAnswer(value?: string, detail?: string) {
 export const BUILDING_MAX_LENGTH = 500
 
 export const BUILDING_PLACEHOLDER =
-  'e.g. a founder copilot, a real-time party game, or the internal tool your team opens every morning'
+  'e.g. realtime collaboration, an AI support workflow, or an operations dashboard'
 
 export type OnboardingSurveySurface = 'building_state' | 'project_home' | 'org_form'
 
