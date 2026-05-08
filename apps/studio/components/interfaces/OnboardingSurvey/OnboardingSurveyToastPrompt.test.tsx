@@ -1,10 +1,14 @@
 import { render, screen } from '@testing-library/react'
-import type { ReactNode } from 'react'
+import type { ComponentProps, ReactNode } from 'react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { OnboardingSurveyToastPrompt } from './OnboardingSurveyToastPrompt'
 
-const { mockOpenDialog, promptState } = vi.hoisted(() => ({
+type ButtonMockProps = ComponentProps<'button'> & { loading?: boolean }
+
+const { mockAddBanner, mockDismissBanner, mockOpenDialog, promptState } = vi.hoisted(() => ({
+  mockAddBanner: vi.fn(),
+  mockDismissBanner: vi.fn(),
   mockOpenDialog: vi.fn(),
   promptState: {
     current: {
@@ -19,15 +23,22 @@ const { mockOpenDialog, promptState } = vi.hoisted(() => ({
   },
 }))
 
-vi.mock('sonner', () => ({
-  toast: {
-    custom: vi.fn(),
-    dismiss: vi.fn(),
+vi.mock('@/components/ui/BannerStack/BannerCard', () => ({
+  BannerCard: ({ children }: { children: ReactNode }) => <div>{children}</div>,
+}))
+
+vi.mock('@/components/ui/BannerStack/BannerStackProvider', () => ({
+  BANNER_ID: {
+    ONBOARDING_SURVEY: 'onboarding-survey-banner',
   },
+  useBannerStack: () => ({
+    addBanner: mockAddBanner,
+    dismissBanner: mockDismissBanner,
+  }),
 }))
 
 vi.mock('ui', () => ({
-  Button: ({ children, loading, ...props }: any) => (
+  Button: ({ children, loading, ...props }: ButtonMockProps) => (
     <button {...props} disabled={props.disabled || loading}>
       {children}
     </button>
@@ -40,13 +51,15 @@ vi.mock('ui', () => ({
   DialogSection: ({ children }: { children: ReactNode }) => <div>{children}</div>,
   DialogSectionSeparator: () => <hr />,
   DialogTitle: ({ children }: { children: ReactNode }) => <h2>{children}</h2>,
-  Label_Shadcn_: ({ children, ...props }: any) => <label {...props}>{children}</label>,
+  Label_Shadcn_: ({ children, ...props }: ComponentProps<'label'>) => (
+    <label {...props}>{children}</label>
+  ),
   Select_Shadcn_: ({ children }: { children: ReactNode }) => <div>{children}</div>,
   SelectContent_Shadcn_: ({ children }: { children: ReactNode }) => <div>{children}</div>,
   SelectItem_Shadcn_: ({ children }: { children: ReactNode }) => <div>{children}</div>,
   SelectTrigger_Shadcn_: ({ children }: { children: ReactNode }) => <div>{children}</div>,
   SelectValue_Shadcn_: ({ placeholder }: { placeholder?: string }) => <span>{placeholder}</span>,
-  Textarea: (props: any) => <textarea {...props} />,
+  Textarea: (props: ComponentProps<'textarea'>) => <textarea {...props} />,
 }))
 
 vi.mock('./useOnboardingSurveyPrompt', () => ({
@@ -61,6 +74,17 @@ describe('OnboardingSurveyToastPrompt', () => {
     vi.clearAllMocks()
     promptState.current.open = false
     promptState.current.shouldShowPrompt = true
+  })
+
+  it('adds the bottom-right banner stack card for the fallback prompt', () => {
+    render(<OnboardingSurveyToastPrompt />)
+
+    expect(mockAddBanner).toHaveBeenCalledWith(
+      expect.objectContaining({
+        id: 'onboarding-survey-banner',
+        isDismissed: false,
+      })
+    )
   })
 
   it('auto-opens the welcome dialog when requested', () => {

@@ -4,6 +4,7 @@ import { Badge, cn, Tooltip, TooltipContent, TooltipTrigger } from 'ui'
 
 import { InstanceConfiguration } from '../Settings/Infrastructure/InfrastructureConfiguration/InstanceConfiguration'
 import { HighAvailabilityBadge } from './HighAvailabilityBadge'
+import { OnboardingSurveyInlinePrompt } from '@/components/interfaces/OnboardingSurvey'
 import { ActivityStats } from '@/components/interfaces/ProjectHome/ActivityStats'
 import { ProjectConnectionPopover } from '@/components/interfaces/ProjectHome/ProjectConnectionPopover'
 import { ProjectPausedState } from '@/components/layouts/ProjectLayout/PausedState/ProjectPausedState'
@@ -17,7 +18,11 @@ import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganizati
 import { useIsOrioleDb, useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { DOCS_URL, PROJECT_STATUS } from '@/lib/constants'
 
-export const TopSection = () => {
+type TopSectionProps = {
+  showMockBuildingSurvey?: boolean
+}
+
+export const TopSection = ({ showMockBuildingSurvey = false }: TopSectionProps) => {
   const isOrioleDb = useIsOrioleDb()
   const { data: project } = useSelectedProjectQuery()
   const { data: organization } = useSelectedOrganizationQuery()
@@ -95,15 +100,30 @@ export const TopSection = () => {
           </div>
         </div>
         <div>
-          <div
-            className={cn(
-              'w-full h-[400px] md:h-[500px] border border-muted rounded-md overflow-hidden flex flex-col relative'
-            )}
-          >
-            <ReactFlowProvider>
-              <InstanceConfiguration diagramOnly />
-            </ReactFlowProvider>
-          </div>
+          {showMockBuildingSurvey ? (
+            <div className="w-full min-h-[400px] md:min-h-[500px] rounded-md border border-muted bg-surface-100 p-6">
+              <div className="max-w-xl space-y-6">
+                <div className="space-y-1">
+                  <h2 className="text-base text-foreground">While you wait</h2>
+                  <p className="text-sm text-foreground-light">
+                    Your project is spinning up. Answer two optional questions while we prepare your
+                    database and API endpoints.
+                  </p>
+                </div>
+                <OnboardingSurveyInlinePrompt />
+              </div>
+            </div>
+          ) : (
+            <div
+              className={cn(
+                'w-full h-[400px] md:h-[500px] border border-muted rounded-md overflow-hidden flex flex-col relative'
+              )}
+            >
+              <ReactFlowProvider>
+                <InstanceConfiguration diagramOnly />
+              </ReactFlowProvider>
+            </div>
+          )}
         </div>
       </div>
       <ProjectUpgradeFailedBanner />

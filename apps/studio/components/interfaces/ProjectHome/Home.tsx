@@ -2,6 +2,7 @@ import { DndContext, DragEndEvent, PointerSensor, useSensor, useSensors } from '
 import { arrayMove, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { IS_PLATFORM, useFlag, useParams } from 'common'
 import dayjs from 'dayjs'
+import { useRouter } from 'next/router'
 import { useEffect, useRef } from 'react'
 import { cn } from 'ui'
 
@@ -11,7 +12,12 @@ import { CustomReportSection } from './CustomReportSection'
 import { DEFAULT_SECTION_ORDER, mergeSectionOrder } from './Home.utils'
 import { ProjectUsageSection as ProjectUsageSectionV2 } from './ProjectUsageSection'
 import { ProjectUsageSection as ProjectUsageSectionV1 } from '@/components/interfaces/Home/ProjectUsageSection'
-import { OnboardingSurveyToastPrompt } from '@/components/interfaces/OnboardingSurvey'
+import {
+  getOnboardingSurveyPromptOverride,
+  ONBOARDING_SURVEY_PROMPT_QUERY_PARAM,
+  OnboardingSurveyToastPrompt,
+  shouldForceOnboardingSurveyPrompt,
+} from '@/components/interfaces/OnboardingSurvey'
 import { SortableSection } from '@/components/interfaces/ProjectHome/SortableSection'
 import { TopSection } from '@/components/interfaces/ProjectHome/TopSection'
 import { ProjectNeedsSecuring } from '@/components/layouts/ProjectNeedsSecuring/ProjectNeedsSecuring'
@@ -23,6 +29,7 @@ import { useTrack } from '@/lib/telemetry/track'
 import { useAppStateSnapshot } from '@/state/app-state'
 
 export const ProjectHome = () => {
+  const router = useRouter()
   const { enableBranching } = useParams()
   const snap = useAppStateSnapshot()
   const { data: project } = useSelectedProjectQuery()
@@ -35,10 +42,26 @@ export const ProjectHome = () => {
   const hasShownEnableBranchingModalRef = useRef(false)
   const isPaused = project?.status === PROJECT_STATUS.INACTIVE
   const isComingUp = project?.status === PROJECT_STATUS.COMING_UP
+  const onboardingSurveyPromptOverride = getOnboardingSurveyPromptOverride(
+    router.query[ONBOARDING_SURVEY_PROMPT_QUERY_PARAM]
+  )
+  const isForcingOnboardingSurveyPrompt = shouldForceOnboardingSurveyPrompt({
+    override: onboardingSurveyPromptOverride,
+    surface: 'project_home',
+  })
+  const shouldForceOnboardingSurveyDialog =
+    onboardingSurveyPromptOverride === '1' ||
+    onboardingSurveyPromptOverride === 'true' ||
+    onboardingSurveyPromptOverride === 'dialog' ||
+    onboardingSurveyPromptOverride === 'project_home'
+  const shouldForceOnboardingSurveyBuildingState =
+    onboardingSurveyPromptOverride === 'building_state'
   const isRecentlyCreatedProject =
     !!project?.inserted_at && dayjs(project.inserted_at).isAfter(dayjs().subtract(1, 'hour'))
   const shouldShowOnboardingSurveyToast =
-    !!project && !isPaused && (isComingUp || isRecentlyCreatedProject)
+    !!project &&
+    !isPaused &&
+    (isComingUp || isRecentlyCreatedProject || isForcingOnboardingSurveyPrompt)
 
   const [sectionOrder, setSectionOrder] = useLocalStorage<string[]>(
     `home-section-order-${project?.ref || 'default'}`,
@@ -87,14 +110,16 @@ export const ProjectHome = () => {
 
   return (
     <ProjectNeedsSecuring>
-      {shouldShowOnboardingSurveyToast && <OnboardingSurveyToastPrompt autoOpen={isComingUp} />}
+      {shouldShowOnboardingSurveyToast && (
+        <OnboardingSurveyToastPrompt autoOpen={isComingUp || shouldForceOnboardingSurveyDialog} />
+      )}
       <div className="w-full h-full">
         <ScaffoldContainer size="large" className={cn(isPaused && 'h-full')}>
           <ScaffoldSection
             isFullWidth
             className={cn(isPaused ? 'h-full flex justify-center p-0!' : 'pb-0')}
           >
-            <TopSection />
+            <TopSection showMockBuildingSurvey={shouldForceOnboardingSurveyBuildingState} />
           </ScaffoldSection>
         </ScaffoldContainer>
         {!isPaused && (

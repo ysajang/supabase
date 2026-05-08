@@ -2,6 +2,12 @@ import { act, renderHook } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { useOnboardingSurveyPrompt } from './useOnboardingSurveyPrompt'
+import { routerMock } from '@/tests/lib/route-mock'
+
+type PromptState = { status: 'submitted' | 'dismissed'; updatedAt: string } | null
+type OrganizationState = { slug: string } | undefined
+type ProfileState = { gotrue_id?: string; id?: number } | undefined
+type ProjectState = { ref: string } | undefined
 
 const {
   localStorageState,
@@ -12,15 +18,15 @@ const {
   profileState,
   projectState,
 } = vi.hoisted(() => ({
-  localStorageState: { current: null as any },
+  localStorageState: { current: null as PromptState },
   mockMutateAsync: vi.fn(),
-  mockSetLocalStorageState: vi.fn((value: any) => {
+  mockSetLocalStorageState: vi.fn((value: PromptState | ((state: PromptState) => PromptState)) => {
     localStorageState.current = value instanceof Function ? value(localStorageState.current) : value
   }),
   mockTrack: vi.fn(),
-  organizationState: { current: { slug: 'test-org' } as any },
-  profileState: { current: { gotrue_id: 'user-1', id: 1 } as any },
-  projectState: { current: { ref: 'project-ref' } as any },
+  organizationState: { current: { slug: 'test-org' } as OrganizationState },
+  profileState: { current: { gotrue_id: 'user-1', id: 1 } as ProfileState },
+  projectState: { current: { ref: 'project-ref' } as ProjectState },
 }))
 
 vi.mock('common', () => ({
@@ -75,6 +81,7 @@ describe('useOnboardingSurveyPrompt', () => {
     profileState.current = { gotrue_id: 'user-1', id: 1 }
     projectState.current = { ref: 'project-ref' }
     mockMutateAsync.mockResolvedValue(undefined)
+    routerMock.setCurrentUrl('/project/project-ref')
   })
 
   afterEach(() => {
@@ -98,6 +105,15 @@ describe('useOnboardingSurveyPrompt', () => {
     const { result } = renderHook(() => useOnboardingSurveyPrompt({ surface: 'project_home' }))
 
     expect(result.current.shouldShowPrompt).toBe(false)
+  })
+
+  it('can be forced for prototype testing', () => {
+    localStorageState.current = { status: 'dismissed', updatedAt: '2026-05-07T00:00:00.000Z' }
+    routerMock.setCurrentUrl('/project/project-ref?onboardingSurveyPrompt=building_state')
+
+    const { result } = renderHook(() => useOnboardingSurveyPrompt({ surface: 'building_state' }))
+
+    expect(result.current.shouldShowPrompt).toBe(true)
   })
 
   it('tracks dialog opens and dismissals', () => {

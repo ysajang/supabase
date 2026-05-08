@@ -662,7 +662,7 @@ export const NewOrgForm = ({
                         <FormItemLayout
                           label="Where did you hear about us?"
                           layout="horizontal"
-                          description="These are optional questions to help us improve your onboarding."
+                          description="Optional questions to help us improve your onboarding."
                         >
                           <FormControl>
                             <div className="flex flex-col gap-y-2">

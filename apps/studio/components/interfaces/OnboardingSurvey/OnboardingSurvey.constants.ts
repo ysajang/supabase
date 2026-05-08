@@ -28,7 +28,7 @@ export const HEARD_FROM_FOLLOW_UP_BY_VALUE: Record<
   },
   youtube: {
     label: 'Which channel or video?',
-    placeholder: 'e.g. Supabase, Fireship, Theo',
+    placeholder: 'e.g. Supabase, Fireship, KRAZAM',
   },
   blog_article: {
     label: 'Which blog or article?',
@@ -65,6 +65,27 @@ export const BUILDING_PLACEHOLDER =
   'e.g. realtime collaboration, an AI support workflow, or an operations dashboard'
 
 export type OnboardingSurveySurface = 'building_state' | 'project_home' | 'org_form'
+
+export const ONBOARDING_SURVEY_PROMPT_QUERY_PARAM = 'onboardingSurveyPrompt'
+
+export function getOnboardingSurveyPromptOverride(value?: string | string[]) {
+  return Array.isArray(value) ? value[0] : value
+}
+
+export function shouldForceOnboardingSurveyPrompt({
+  override,
+  surface,
+}: {
+  override?: string
+  surface: OnboardingSurveySurface
+}) {
+  return (
+    override === '1' ||
+    override === 'true' ||
+    override === surface ||
+    (surface === 'project_home' && (override === 'dialog' || override === 'toast'))
+  )
+}
 
 export type OnboardingSurveyPromptStatus = 'submitted' | 'dismissed'
 

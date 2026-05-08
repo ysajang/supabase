@@ -75,7 +75,7 @@ export function OnboardingSurveyDialog({
           <DialogTitle>{title}</DialogTitle>
         </DialogHeader>
         <DialogSectionSeparator />
-        <DialogSection className="flex flex-col gap-y-5 py-5">
+        <DialogSection className="flex flex-col gap-y-6 pt-4.5 pb-5">
           <p className="text-sm text-foreground-light">{description}</p>
 
           <div className="flex flex-col gap-y-2">
@@ -130,7 +130,7 @@ export function OnboardingSurveyDialog({
             />
           </div>
         </DialogSection>
-        <DialogSectionSeparator />
+
         <DialogFooter className="px-5 py-4">
           <Button type="default" disabled={isSubmitting} onClick={onSkip}>
             Skip

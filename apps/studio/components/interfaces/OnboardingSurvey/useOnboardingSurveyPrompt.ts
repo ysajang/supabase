@@ -1,10 +1,16 @@
 import { LOCAL_STORAGE_KEYS } from 'common'
+import { useRouter } from 'next/router'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
 
 import type {
   OnboardingSurveyPromptState,
   OnboardingSurveySurface,
+} from './OnboardingSurvey.constants'
+import {
+  getOnboardingSurveyPromptOverride,
+  ONBOARDING_SURVEY_PROMPT_QUERY_PARAM,
+  shouldForceOnboardingSurveyPrompt,
 } from './OnboardingSurvey.constants'
 import { useOnboardingSurveyMutation } from '@/data/organizations/onboarding-survey-mutation'
 import { useLocalStorageQuery } from '@/hooks/misc/useLocalStorage'
@@ -35,6 +41,7 @@ export const getOnboardingSurveyPromptStorageKey = ({
 }
 
 export function useOnboardingSurveyPrompt({ surface }: { surface: OnboardingSurveySurface }) {
+  const router = useRouter()
   const track = useTrack()
   const { profile } = useProfile()
   const { data: organization } = useSelectedOrganizationQuery()
@@ -55,9 +62,17 @@ export function useOnboardingSurveyPrompt({ surface }: { surface: OnboardingSurv
     useLocalStorageQuery<OnboardingSurveyPromptState | null>(storageKey, null)
 
   const mutation = useOnboardingSurveyMutation()
+  const promptOverride = getOnboardingSurveyPromptOverride(
+    router.query[ONBOARDING_SURVEY_PROMPT_QUERY_PARAM]
+  )
+  const isForcedPrompt = shouldForceOnboardingSurveyPrompt({ override: promptOverride, surface })
 
   const shouldShowPrompt =
-    isPromptStateLoaded && !!orgSlug && !!projectRef && !!profileId && promptState === null
+    isPromptStateLoaded &&
+    !!orgSlug &&
+    !!projectRef &&
+    !!profileId &&
+    (promptState === null || isForcedPrompt)
 
   useEffect(() => {
     if (!shouldShowPrompt || hasTrackedShown.current) return

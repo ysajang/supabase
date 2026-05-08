@@ -1,9 +1,10 @@
 import { useEffect, useRef } from 'react'
-import { toast } from 'sonner'
 import { Button } from 'ui'
 
 import { OnboardingSurveyDialog } from './OnboardingSurveyDialog'
 import { useOnboardingSurveyPrompt } from './useOnboardingSurveyPrompt'
+import { BannerCard } from '@/components/ui/BannerStack/BannerCard'
+import { BANNER_ID, useBannerStack } from '@/components/ui/BannerStack/BannerStackProvider'
 
 type OnboardingSurveyToastPromptProps = {
   autoOpen?: boolean
@@ -18,63 +19,73 @@ export function OnboardingSurveyToastPrompt({
   autoOpen = false,
 }: OnboardingSurveyToastPromptProps) {
   const prompt = useOnboardingSurveyPrompt({ surface: 'project_home' })
-  const toastId = useRef<string | number>()
+  const { addBanner, dismissBanner } = useBannerStack()
+  const hasAutoOpened = useRef(false)
   const { dismissPrompt, openDialog, shouldShowPrompt } = prompt
 
   useEffect(() => {
-    if (!autoOpen || !shouldShowPrompt) return
+    if (!autoOpen || !shouldShowPrompt || hasAutoOpened.current) return
 
+    hasAutoOpened.current = true
     openDialog()
   }, [autoOpen, openDialog, shouldShowPrompt])
 
   useEffect(() => {
-    if (autoOpen || !shouldShowPrompt || toastId.current !== undefined) return
+    if (autoOpen || !shouldShowPrompt) {
+      dismissBanner(BANNER_ID.ONBOARDING_SURVEY)
+      return
+    }
 
-    toastId.current = toast.custom(
-      (id) => (
-        <div className="w-[320px] rounded-md border border-overlay-border bg-surface-100 p-4 shadow-lg">
-          <div className="space-y-1">
-            <p className="text-sm text-foreground">Help us tailor your setup</p>
-            <p className="text-sm text-foreground-light">
-              Answer two optional questions about how you found Supabase and what you are building.
-            </p>
+    addBanner({
+      id: BANNER_ID.ONBOARDING_SURVEY,
+      isDismissed: false,
+      priority: 1,
+      content: (
+        <BannerCard
+          onDismiss={() => {
+            dismissBanner(BANNER_ID.ONBOARDING_SURVEY)
+            dismissPrompt('toast_skip')
+          }}
+        >
+          <div className="flex flex-col gap-y-4">
+            <div className="flex flex-col gap-y-1 mb-2">
+              <p className="text-sm font-medium">Help us tailor your setup</p>
+              <p className="text-xs text-foreground-lighter text-balance">
+                Answer two optional questions about how you found Supabase and what you are
+                building.
+              </p>
+            </div>
+            <div className="flex gap-2">
+              <Button
+                type="primary"
+                size="tiny"
+                onClick={() => {
+                  dismissBanner(BANNER_ID.ONBOARDING_SURVEY)
+                  openDialog()
+                }}
+              >
+                Answer
+              </Button>
+              <Button
+                type="default"
+                size="tiny"
+                onClick={() => {
+                  dismissBanner(BANNER_ID.ONBOARDING_SURVEY)
+                  dismissPrompt('toast_skip')
+                }}
+              >
+                Skip
+              </Button>
+            </div>
           </div>
-          <div className="mt-4 flex items-center gap-2">
-            <Button
-              type="primary"
-              size="tiny"
-              onClick={() => {
-                toast.dismiss(id)
-                toastId.current = undefined
-                openDialog()
-              }}
-            >
-              Answer
-            </Button>
-            <Button
-              type="default"
-              size="tiny"
-              onClick={() => {
-                toast.dismiss(id)
-                toastId.current = undefined
-                dismissPrompt('toast_skip')
-              }}
-            >
-              Skip
-            </Button>
-          </div>
-        </div>
+        </BannerCard>
       ),
-      { duration: Infinity }
-    )
+    })
 
     return () => {
-      if (toastId.current !== undefined) {
-        toast.dismiss(toastId.current)
-        toastId.current = undefined
-      }
+      dismissBanner(BANNER_ID.ONBOARDING_SURVEY)
     }
-  }, [autoOpen, dismissPrompt, openDialog, shouldShowPrompt])
+  }, [addBanner, autoOpen, dismissBanner, dismissPrompt, openDialog, shouldShowPrompt])
 
   return (
     <OnboardingSurveyDialog
