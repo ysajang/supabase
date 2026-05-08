@@ -16,7 +16,7 @@ export function OnboardingSurveyInlinePrompt({ className }: OnboardingSurveyInli
     <>
       <div
         className={cn(
-          'relative flex flex-col items-center justify-center gap-y-4 overflow-hidden rounded-md border border-muted bg-surface-200 p-6',
+          'relative flex flex-col items-center justify-center gap-y-4 overflow-hidden rounded-md border border-muted bg-surface-200/50 p-6',
           className
         )}
       >
