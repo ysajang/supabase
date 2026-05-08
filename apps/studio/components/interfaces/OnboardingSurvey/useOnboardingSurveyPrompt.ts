@@ -24,7 +24,11 @@ type SurveyValues = {
   building?: string
 }
 
-type DismissReason = 'skip_button' | 'dialog_dismissed' | 'toast_skip'
+type SubmitSurveyOptions = {
+  showSuccessToast?: boolean
+}
+
+type DismissReason = 'skip_button' | 'dialog_dismissed' | 'toast_skip' | 'close_button'
 
 export const getOnboardingSurveyPromptStorageKey = ({
   orgSlug,
@@ -116,8 +120,11 @@ export function useOnboardingSurveyPrompt({ surface }: { surface: OnboardingSurv
   )
 
   const submitSurvey = useCallback(
-    async ({ heard_from, building }: SurveyValues) => {
-      if (!orgSlug) return
+    async (
+      { heard_from, building }: SurveyValues,
+      { showSuccessToast = true }: SubmitSurveyOptions = {}
+    ) => {
+      if (!orgSlug) return false
 
       try {
         await mutation.mutateAsync({
@@ -135,7 +142,8 @@ export function useOnboardingSurveyPrompt({ surface }: { surface: OnboardingSurv
           hasHeardFrom: !!heard_from?.trim(),
           hasBuilding: !!building?.trim(),
         })
-        toast.success('Thanks for sharing')
+        if (showSuccessToast) toast.success('Thanks for sharing')
+        return true
       } catch {
         track('onboarding_survey_submit_failed', {
           surface,
@@ -145,6 +153,7 @@ export function useOnboardingSurveyPrompt({ surface }: { surface: OnboardingSurv
           hasBuilding: !!building?.trim(),
         })
         toast.error('Failed to submit. Please try again.')
+        return false
       }
     },
     [mutation, orgSlug, projectRef, setPromptState, surface, track]

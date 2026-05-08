@@ -33,7 +33,7 @@ type OnboardingSurveyDialogProps = {
   onDismiss: () => void
   onOpenChange: (open: boolean) => void
   onSkip: () => void
-  onSubmit: (values: { heard_from?: string; building?: string }) => Promise<void> | void
+  onSubmit: (values: { heard_from?: string; building?: string }) => Promise<unknown> | unknown
   title?: string
 }
 

@@ -1,10 +1,14 @@
 import { ReactFlowProvider } from '@xyflow/react'
 import Link from 'next/link'
+import { useEffect, useState } from 'react'
 import { Badge, cn, Tooltip, TooltipContent, TooltipTrigger } from 'ui'
 
 import { InstanceConfiguration } from '../Settings/Infrastructure/InfrastructureConfiguration/InstanceConfiguration'
 import { HighAvailabilityBadge } from './HighAvailabilityBadge'
-import { OnboardingSurveyInlinePrompt } from '@/components/interfaces/OnboardingSurvey'
+import {
+  OnboardingSurveyEmbeddedPrompt,
+  OnboardingSurveyInlinePrompt,
+} from '@/components/interfaces/OnboardingSurvey'
 import { ActivityStats } from '@/components/interfaces/ProjectHome/ActivityStats'
 import { ProjectConnectionPopover } from '@/components/interfaces/ProjectHome/ProjectConnectionPopover'
 import { ProjectPausedState } from '@/components/layouts/ProjectLayout/PausedState/ProjectPausedState'
@@ -23,6 +27,7 @@ type TopSectionProps = {
 }
 
 export const TopSection = ({ mockBuildingSurveyVariant }: TopSectionProps) => {
+  const [isMockBuildingSurveyHidden, setIsMockBuildingSurveyHidden] = useState(false)
   const isOrioleDb = useIsOrioleDb()
   const { data: project } = useSelectedProjectQuery()
   const { data: organization } = useSelectedOrganizationQuery()
@@ -39,12 +44,17 @@ export const TopSection = ({ mockBuildingSurveyVariant }: TopSectionProps) => {
   const isMainBranch = currentBranch?.name === mainBranch?.name
 
   const isPaused = project?.status === PROJECT_STATUS.INACTIVE
+  const showMockBuildingSurvey = !!mockBuildingSurveyVariant && !isMockBuildingSurveyHidden
   const projectName =
     currentBranch && !isMainBranch
       ? currentBranch.name
       : project?.name
         ? project.name
         : 'Welcome to your project'
+
+  useEffect(() => {
+    setIsMockBuildingSurveyHidden(false)
+  }, [mockBuildingSurveyVariant])
 
   if (isPaused) {
     return <ProjectPausedState />
@@ -100,11 +110,13 @@ export const TopSection = ({ mockBuildingSurveyVariant }: TopSectionProps) => {
           </div>
         </div>
         <div>
-          {mockBuildingSurveyVariant ? (
-            <OnboardingSurveyInlinePrompt
-              className="flex min-h-[400px] flex-col justify-center md:min-h-[500px]"
-              variant={mockBuildingSurveyVariant}
+          {showMockBuildingSurvey && mockBuildingSurveyVariant === 'embedded' ? (
+            <OnboardingSurveyEmbeddedPrompt
+              className="flex min-h-[400px] flex-col md:min-h-[500px]"
+              onClose={() => setIsMockBuildingSurveyHidden(true)}
             />
+          ) : showMockBuildingSurvey ? (
+            <OnboardingSurveyInlinePrompt className="flex min-h-[400px] flex-col justify-center md:min-h-[500px]" />
           ) : (
             <div
               className={cn(

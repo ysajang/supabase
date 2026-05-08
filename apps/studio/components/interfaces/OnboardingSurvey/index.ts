@@ -1,5 +1,6 @@
 export * from './OnboardingSurvey.constants'
 export * from './OnboardingSurveyDialog'
+export * from './OnboardingSurveyEmbeddedPrompt'
 export * from './OnboardingSurveyInlinePrompt'
 export * from './OnboardingSurveyToastPrompt'
 export * from './useOnboardingSurveyPrompt'

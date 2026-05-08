@@ -478,7 +478,7 @@ export interface OnboardingSurveySubmittedEvent {
 export interface OnboardingSurveySkippedEvent {
   action: 'onboarding_survey_skipped'
   properties: OnboardingSurveyBaseProperties & {
-    reason: 'skip_button' | 'dialog_dismissed' | 'toast_skip' | 'org_form_blank'
+    reason: 'skip_button' | 'dialog_dismissed' | 'toast_skip' | 'org_form_blank' | 'close_button'
   }
   groups: Partial<TelemetryGroups>
 }
