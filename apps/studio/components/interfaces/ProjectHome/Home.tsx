@@ -11,6 +11,7 @@ import { CustomReportSection } from './CustomReportSection'
 import { DEFAULT_SECTION_ORDER, mergeSectionOrder } from './Home.utils'
 import { ProjectUsageSection as ProjectUsageSectionV2 } from './ProjectUsageSection'
 import { ProjectUsageSection as ProjectUsageSectionV1 } from '@/components/interfaces/Home/ProjectUsageSection'
+import { OnboardingSurveyToastPrompt } from '@/components/interfaces/OnboardingSurvey'
 import { SortableSection } from '@/components/interfaces/ProjectHome/SortableSection'
 import { TopSection } from '@/components/interfaces/ProjectHome/TopSection'
 import { ProjectNeedsSecuring } from '@/components/layouts/ProjectNeedsSecuring/ProjectNeedsSecuring'
@@ -34,6 +35,10 @@ export const ProjectHome = () => {
   const hasShownEnableBranchingModalRef = useRef(false)
   const isPaused = project?.status === PROJECT_STATUS.INACTIVE
   const isComingUp = project?.status === PROJECT_STATUS.COMING_UP
+  const isRecentlyCreatedProject =
+    !!project?.inserted_at && dayjs(project.inserted_at).isAfter(dayjs().subtract(1, 'hour'))
+  const shouldShowOnboardingSurveyToast =
+    !!project && !isPaused && (isComingUp || isRecentlyCreatedProject)
 
   const [sectionOrder, setSectionOrder] = useLocalStorage<string[]>(
     `home-section-order-${project?.ref || 'default'}`,
@@ -82,6 +87,7 @@ export const ProjectHome = () => {
 
   return (
     <ProjectNeedsSecuring>
+      {shouldShowOnboardingSurveyToast && <OnboardingSurveyToastPrompt autoOpen={isComingUp} />}
       <div className="w-full h-full">
         <ScaffoldContainer size="large" className={cn(isPaused && 'h-full')}>
           <ScaffoldSection

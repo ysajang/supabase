@@ -24,6 +24,7 @@ import {
   SelectTrigger_Shadcn_,
   SelectValue_Shadcn_,
   Switch,
+  Textarea,
 } from 'ui'
 import { FormItemLayout } from 'ui-patterns/form/FormItemLayout/FormItemLayout'
 import { ShimmeringLoader } from 'ui-patterns/ShimmeringLoader'
@@ -38,8 +39,14 @@ import {
   type PaymentMethodElementRef,
 } from '@/components/interfaces/Billing/Payment/PaymentMethods/NewPaymentMethodElement'
 import SpendCapModal from '@/components/interfaces/Billing/SpendCapModal'
+import {
+  BUILDING_MAX_LENGTH,
+  BUILDING_PLACEHOLDER,
+  HEARD_FROM_OPTIONS,
+} from '@/components/interfaces/OnboardingSurvey'
 import { InlineLink } from '@/components/ui/InlineLink'
 import Panel from '@/components/ui/Panel'
+import { useOnboardingSurveyMutation } from '@/data/organizations/onboarding-survey-mutation'
 import { useOrganizationCreateMutation } from '@/data/organizations/organization-create-mutation'
 import { useOrganizationCreationPreview } from '@/data/organizations/organization-creation-preview'
 import { useOrganizationsQuery } from '@/data/organizations/organizations-query'
@@ -51,6 +58,7 @@ import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
 import { useLocalStorageQuery } from '@/hooks/misc/useLocalStorage'
 import { PRICING_TIER_LABELS_ORG, STRIPE_PUBLIC_KEY } from '@/lib/constants'
 import { useProfile } from '@/lib/profile'
+import { useTrack } from '@/lib/telemetry/track'
 
 const ORG_KIND_TYPES = {
   PERSONAL: 'Personal',
@@ -93,6 +101,8 @@ const formSchema = z.object({
     ),
   size: z.enum(['1', '10', '50', '100', '300'] as const),
   spend_cap: z.boolean(),
+  heard_from: z.string().optional(),
+  building: z.string().max(BUILDING_MAX_LENGTH).optional(),
 })
 
 type FormState = z.infer<typeof formSchema>
@@ -112,7 +122,9 @@ export const NewOrgForm = ({
 }: NewOrgFormProps) => {
   const router = useRouter()
   const user = useProfile()
+  const track = useTrack()
   const { resolvedTheme } = useTheme()
+  const hasTrackedSurveyShown = useRef(false)
 
   const isBillingEnabled = useIsFeatureEnabled('billing:all')
 
@@ -167,8 +179,19 @@ export const NewOrgForm = ({
       kind: defaultValues.kind as typeof ORG_KIND_DEFAULT,
       size: defaultValues.size as keyof typeof ORG_SIZE_TYPES,
       spend_cap: defaultValues.spend_cap,
+      heard_from: '',
+      building: '',
     },
   })
+
+  useEffect(() => {
+    if (hasTrackedSurveyShown.current) return
+
+    hasTrackedSurveyShown.current = true
+    track('onboarding_survey_prompt_shown', {
+      surface: 'org_form',
+    })
+  }, [track])
 
   useEffect(() => {
     form.reset({
@@ -177,6 +200,8 @@ export const NewOrgForm = ({
       kind: defaultValues.kind as typeof ORG_KIND_DEFAULT,
       size: defaultValues.size as keyof typeof ORG_SIZE_TYPES,
       spend_cap: defaultValues.spend_cap,
+      heard_from: form.getValues('heard_from'),
+      building: form.getValues('building'),
     })
   }, [defaultValues, form])
 
@@ -255,7 +280,7 @@ export const NewOrgForm = ({
       if ('pending_payment_intent_secret' in org && org.pending_payment_intent_secret) {
         setPaymentIntentSecret(org.pending_payment_intent_secret)
       } else {
-        onOrganizationCreated(org as { slug: string })
+        await onOrganizationCreated(org as { slug: string })
       }
     },
     onError: (data) => {
@@ -263,11 +288,53 @@ export const NewOrgForm = ({
       setNewOrgLoading(false)
     },
   })
+  const { mutateAsync: submitOnboardingSurvey } = useOnboardingSurveyMutation()
+
+  const submitOrganizationSurvey = useCallback(
+    async (slug: string) => {
+      const heardFrom = form.getValues('heard_from')?.trim()
+      const building = form.getValues('building')?.trim()
+      const hasHeardFrom = !!heardFrom
+      const hasBuilding = !!building
+
+      if (!hasHeardFrom && !hasBuilding) {
+        track('onboarding_survey_skipped', {
+          surface: 'org_form',
+          orgSlug: slug,
+          reason: 'org_form_blank',
+        })
+        return
+      }
+
+      try {
+        await submitOnboardingSurvey({
+          slug,
+          heard_from: heardFrom,
+          building,
+        })
+        track('onboarding_survey_submitted', {
+          surface: 'org_form',
+          orgSlug: slug,
+          hasHeardFrom,
+          hasBuilding,
+        })
+      } catch {
+        track('onboarding_survey_submit_failed', {
+          surface: 'org_form',
+          orgSlug: slug,
+          hasHeardFrom,
+          hasBuilding,
+        })
+        // This prototype survey should never block organization creation.
+      }
+    },
+    [form, submitOnboardingSurvey, track]
+  )
 
   const { mutate: confirmPendingSubscriptionChange } = useConfirmPendingSubscriptionCreateMutation({
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       if (data && 'slug' in data) {
-        onOrganizationCreated({ slug: data.slug })
+        await onOrganizationCreated({ slug: data.slug })
       }
     },
   })
@@ -293,7 +360,9 @@ export const NewOrgForm = ({
     }
   }
 
-  const onOrganizationCreated = (org: { slug: string }) => {
+  const onOrganizationCreated = async (org: { slug: string }) => {
+    await submitOrganizationSurvey(org.slug)
+
     const prefilledProjectName = user.profile?.username
       ? user.profile.username + `'s Project`
       : 'My Project'
@@ -507,6 +576,71 @@ export const NewOrgForm = ({
                 />
               </Panel.Content>
             )}
+
+            <Panel.Content>
+              <div className="flex flex-col gap-y-5">
+                <div className="space-y-1">
+                  <p className="text-sm text-foreground">Help us tailor your setup</p>
+                  <p className="text-sm text-foreground-light">
+                    These questions are optional and help us improve onboarding across Dashboard,
+                    CLI, and agents.
+                  </p>
+                </div>
+                <FormField
+                  control={form.control}
+                  name="heard_from"
+                  render={({ field }) => (
+                    <FormItemLayout
+                      label="Where did you hear about us?"
+                      layout="horizontal"
+                      description="Choose the closest option."
+                    >
+                      <FormControl>
+                        <Select_Shadcn_ value={field.value} onValueChange={field.onChange}>
+                          <SelectTrigger_Shadcn_ className="w-full">
+                            <SelectValue_Shadcn_ placeholder="Select an option" />
+                          </SelectTrigger_Shadcn_>
+
+                          <SelectContent_Shadcn_>
+                            {HEARD_FROM_OPTIONS.map((option) => (
+                              <SelectItem_Shadcn_ key={option.value} value={option.value}>
+                                {option.label}
+                              </SelectItem_Shadcn_>
+                            ))}
+                          </SelectContent_Shadcn_>
+                        </Select_Shadcn_>
+                      </FormControl>
+                    </FormItemLayout>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="building"
+                  render={({ field }) => (
+                    <FormItemLayout
+                      label="What are you building?"
+                      layout="horizontal"
+                      description="A short answer is enough."
+                    >
+                      <FormControl>
+                        <div className="flex flex-col gap-y-1">
+                          <Textarea
+                            {...field}
+                            value={field.value ?? ''}
+                            maxLength={BUILDING_MAX_LENGTH}
+                            placeholder={BUILDING_PLACEHOLDER}
+                            className="min-h-24"
+                          />
+                          <span className="self-end text-xs text-foreground-lighter">
+                            {(field.value ?? '').length}/{BUILDING_MAX_LENGTH}
+                          </span>
+                        </div>
+                      </FormControl>
+                    </FormItemLayout>
+                  )}
+                />
+              </div>
+            </Panel.Content>
 
             {isBillingEnabled && (
               <Panel.Content>

@@ -8,6 +8,7 @@ import { ClientLibrary } from '@/components/interfaces/Home/ClientLibrary'
 import { ExampleProject } from '@/components/interfaces/Home/ExampleProject'
 import { EXAMPLE_PROJECTS } from '@/components/interfaces/Home/Home.constants'
 import { APIKeys } from '@/components/interfaces/Home/NewProjectPanel/APIKeys'
+import { OnboardingSurveyInlinePrompt } from '@/components/interfaces/OnboardingSurvey'
 import { SupportLink } from '@/components/interfaces/Support/SupportLink'
 import { useInvalidateProjectsInfiniteQuery } from '@/data/projects/org-projects-infinite-query'
 import { useInvalidateProjectDetailsQuery } from '@/data/projects/project-detail-query'
@@ -106,6 +107,9 @@ const BuildingState = () => {
                     </p>
                   }
                 />
+                <div className="mt-6">
+                  <OnboardingSurveyInlinePrompt />
+                </div>
               </div>
               <div>
                 <h4 className="text-base text-foreground">Not working?</h4>

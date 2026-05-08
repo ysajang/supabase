@@ -418,6 +418,87 @@ export interface ProjectCreationSimpleVersionConfirmModalOpenedEvent {
   groups: Omit<TelemetryGroups, 'project'>
 }
 
+type OnboardingSurveySurface = 'building_state' | 'project_home' | 'org_form'
+
+type OnboardingSurveyBaseProperties = {
+  surface: OnboardingSurveySurface
+  orgSlug?: string
+  projectRef?: string
+}
+
+/**
+ * Onboarding survey prompt was shown after project creation.
+ *
+ * @group Events
+ * @source studio
+ * @page /dashboard/project/{ref}
+ */
+export interface OnboardingSurveyPromptShownEvent {
+  action: 'onboarding_survey_prompt_shown'
+  properties: OnboardingSurveyBaseProperties
+  groups: Partial<TelemetryGroups>
+}
+
+/**
+ * User opened the onboarding survey dialog.
+ *
+ * @group Events
+ * @source studio
+ * @page /dashboard/project/{ref}
+ */
+export interface OnboardingSurveyDialogOpenedEvent {
+  action: 'onboarding_survey_dialog_opened'
+  properties: OnboardingSurveyBaseProperties
+  groups: Partial<TelemetryGroups>
+}
+
+/**
+ * User submitted the onboarding survey.
+ *
+ * @group Events
+ * @source studio
+ * @page /dashboard/project/{ref}
+ */
+export interface OnboardingSurveySubmittedEvent {
+  action: 'onboarding_survey_submitted'
+  properties: OnboardingSurveyBaseProperties & {
+    hasHeardFrom: boolean
+    hasBuilding: boolean
+  }
+  groups: Partial<TelemetryGroups>
+}
+
+/**
+ * User skipped or dismissed the onboarding survey.
+ *
+ * @group Events
+ * @source studio
+ * @page /dashboard/project/{ref}
+ */
+export interface OnboardingSurveySkippedEvent {
+  action: 'onboarding_survey_skipped'
+  properties: OnboardingSurveyBaseProperties & {
+    reason: 'skip_button' | 'dialog_dismissed' | 'toast_skip' | 'org_form_blank'
+  }
+  groups: Partial<TelemetryGroups>
+}
+
+/**
+ * Onboarding survey submit failed.
+ *
+ * @group Events
+ * @source studio
+ * @page /dashboard/project/{ref}
+ */
+export interface OnboardingSurveySubmitFailedEvent {
+  action: 'onboarding_survey_submit_failed'
+  properties: OnboardingSurveyBaseProperties & {
+    hasHeardFrom: boolean
+    hasBuilding: boolean
+  }
+  groups: Partial<TelemetryGroups>
+}
+
 /**
  * User toggled Data API access on a table via the switch in the table editor side panel.
  * Only fires for new tables — editing existing tables links out to the settings page instead.
@@ -3420,6 +3501,11 @@ export type TelemetryEvent =
   | ProjectCreationDefaultPrivilegesExposedEvent
   | ProjectCreationSimpleVersionSubmittedEvent
   | ProjectCreationSimpleVersionConfirmModalOpenedEvent
+  | OnboardingSurveyPromptShownEvent
+  | OnboardingSurveyDialogOpenedEvent
+  | OnboardingSurveySubmittedEvent
+  | OnboardingSurveySkippedEvent
+  | OnboardingSurveySubmitFailedEvent
   | TableApiAccessToggleClickedEvent
   | ProjectCreationInitialStepPromptIntendedEvent
   | ProjectCreationInitialStepSubmittedEvent
