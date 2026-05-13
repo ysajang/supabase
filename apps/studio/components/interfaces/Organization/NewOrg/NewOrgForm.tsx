@@ -529,68 +529,6 @@ export const NewOrgForm = ({
                 )}
               />
             </Panel.Content>
-            <Panel.Content>
-              <FormField
-                control={form.control}
-                name="kind"
-                render={({ field }) => (
-                  <FormItemLayout
-                    label="Type"
-                    layout="horizontal"
-                    description="What best describes your organization?"
-                  >
-                    <FormControl>
-                      <Select_Shadcn_ value={field.value} onValueChange={field.onChange}>
-                        <SelectTrigger_Shadcn_ className="w-full">
-                          <SelectValue_Shadcn_ />
-                        </SelectTrigger_Shadcn_>
-
-                        <SelectContent_Shadcn_>
-                          {Object.entries(ORG_KIND_TYPES).map(([k, v]) => (
-                            <SelectItem_Shadcn_ key={k} value={k}>
-                              {v}
-                            </SelectItem_Shadcn_>
-                          ))}
-                        </SelectContent_Shadcn_>
-                      </Select_Shadcn_>
-                    </FormControl>
-                  </FormItemLayout>
-                )}
-              />
-            </Panel.Content>
-
-            {form.watch('kind') == 'COMPANY' && (
-              <Panel.Content>
-                <FormField
-                  control={form.control}
-                  name="size"
-                  render={({ field }) => (
-                    <FormItemLayout
-                      label="Company size"
-                      layout="horizontal"
-                      description="How many people are in your company?"
-                    >
-                      <FormControl>
-                        <Select_Shadcn_ value={field.value} onValueChange={field.onChange}>
-                          <SelectTrigger_Shadcn_ className="w-full">
-                            <SelectValue_Shadcn_ />
-                          </SelectTrigger_Shadcn_>
-
-                          <SelectContent_Shadcn_>
-                            {Object.entries(ORG_SIZE_TYPES).map(([k, v]) => (
-                              <SelectItem_Shadcn_ key={k} value={k}>
-                                {v}
-                              </SelectItem_Shadcn_>
-                            ))}
-                          </SelectContent_Shadcn_>
-                        </Select_Shadcn_>
-                      </FormControl>
-                    </FormItemLayout>
-                  )}
-                />
-              </Panel.Content>
-            )}
-
             {isBillingEnabled && (
               <Panel.Content>
                 <FormField
@@ -641,9 +579,71 @@ export const NewOrgForm = ({
               <div className="flex flex-col gap-y-5">
                 <FormField
                   control={form.control}
+                  name="kind"
+                  render={({ field }) => (
+                    <FormItemLayout
+                      label="Type"
+                      layout="horizontal"
+                      description="What best describes your organization?"
+                    >
+                      <FormControl>
+                        <Select_Shadcn_ value={field.value} onValueChange={field.onChange}>
+                          <SelectTrigger_Shadcn_ className="w-full">
+                            <SelectValue_Shadcn_ />
+                          </SelectTrigger_Shadcn_>
+
+                          <SelectContent_Shadcn_>
+                            {Object.entries(ORG_KIND_TYPES).map(([k, v]) => (
+                              <SelectItem_Shadcn_ key={k} value={k}>
+                                {v}
+                              </SelectItem_Shadcn_>
+                            ))}
+                          </SelectContent_Shadcn_>
+                        </Select_Shadcn_>
+                      </FormControl>
+                    </FormItemLayout>
+                  )}
+                />
+
+                {form.watch('kind') == 'COMPANY' && (
+                  <FormField
+                    control={form.control}
+                    name="size"
+                    render={({ field }) => (
+                      <FormItemLayout
+                        label="Company size"
+                        layout="horizontal"
+                        description="How many people are in your company?"
+                      >
+                        <FormControl>
+                          <Select_Shadcn_ value={field.value} onValueChange={field.onChange}>
+                            <SelectTrigger_Shadcn_ className="w-full">
+                              <SelectValue_Shadcn_ />
+                            </SelectTrigger_Shadcn_>
+
+                            <SelectContent_Shadcn_>
+                              {Object.entries(ORG_SIZE_TYPES).map(([k, v]) => (
+                                <SelectItem_Shadcn_ key={k} value={k}>
+                                  {v}
+                                </SelectItem_Shadcn_>
+                              ))}
+                            </SelectContent_Shadcn_>
+                          </Select_Shadcn_>
+                        </FormControl>
+                      </FormItemLayout>
+                    )}
+                  />
+                )}
+
+                <FormField
+                  control={form.control}
                   name="heard_from"
                   render={({ field }) => (
-                    <FormItemLayout label="Where did you hear about us?" layout="horizontal">
+                    <FormItemLayout
+                      label="Source"
+                      layout="horizontal"
+                      description="Where did you hear about us?"
+                    >
                       <FormControl>
                         <div className="flex flex-col gap-y-2">
                           <Select_Shadcn_
@@ -689,7 +689,11 @@ export const NewOrgForm = ({
                   control={form.control}
                   name="building"
                   render={({ field }) => (
-                    <FormItemLayout label="What are you building?" layout="horizontal">
+                    <FormItemLayout
+                      label="Project"
+                      layout="horizontal"
+                      description="What are you building?"
+                    >
                       <FormControl>
                         <div className="flex flex-col gap-y-1">
                           <Textarea
