@@ -456,139 +456,151 @@ export const NewOrgForm = ({
     ? `What are you building? ${BUILDING_PLACEHOLDER.replace(/^e\.g\./, 'E.g.')}`
     : BUILDING_PLACEHOLDER
 
-  const onboardingSurveyFields = (
-    <div className="flex flex-col gap-y-5">
-      <FormField
-        control={form.control}
-        name="kind"
-        render={({ field }) => (
-          <FormItemLayout
-            label="Type"
-            layout="horizontal"
-            description="What best describes your organization?"
-          >
-            <FormControl>
-              <Select_Shadcn_ value={field.value} onValueChange={field.onChange}>
+  const orgKindField = (
+    <FormField
+      control={form.control}
+      name="kind"
+      render={({ field }) => (
+        <FormItemLayout
+          label="Type"
+          layout="horizontal"
+          description="What best describes your organization?"
+        >
+          <FormControl>
+            <Select_Shadcn_ value={field.value} onValueChange={field.onChange}>
+              <SelectTrigger_Shadcn_ className="w-full">
+                <SelectValue_Shadcn_ />
+              </SelectTrigger_Shadcn_>
+
+              <SelectContent_Shadcn_>
+                {Object.entries(ORG_KIND_TYPES).map(([k, v]) => (
+                  <SelectItem_Shadcn_ key={k} value={k}>
+                    {v}
+                  </SelectItem_Shadcn_>
+                ))}
+              </SelectContent_Shadcn_>
+            </Select_Shadcn_>
+          </FormControl>
+        </FormItemLayout>
+      )}
+    />
+  )
+
+  const orgSizeField = selectedOrgKind == 'COMPANY' && (
+    <FormField
+      control={form.control}
+      name="size"
+      render={({ field }) => (
+        <FormItemLayout
+          label="Company size"
+          layout="horizontal"
+          description="How many people are in your company?"
+        >
+          <FormControl>
+            <Select_Shadcn_ value={field.value} onValueChange={field.onChange}>
+              <SelectTrigger_Shadcn_ className="w-full">
+                <SelectValue_Shadcn_ />
+              </SelectTrigger_Shadcn_>
+
+              <SelectContent_Shadcn_>
+                {Object.entries(ORG_SIZE_TYPES).map(([k, v]) => (
+                  <SelectItem_Shadcn_ key={k} value={k}>
+                    {v}
+                  </SelectItem_Shadcn_>
+                ))}
+              </SelectContent_Shadcn_>
+            </Select_Shadcn_>
+          </FormControl>
+        </FormItemLayout>
+      )}
+    />
+  )
+
+  const heardFromField = (
+    <FormField
+      control={form.control}
+      name="heard_from"
+      render={({ field }) => (
+        <FormItemLayout
+          label="Source"
+          layout="horizontal"
+          description="Where did you hear about us?"
+        >
+          <FormControl>
+            <div className="flex flex-col gap-y-2">
+              <Select_Shadcn_
+                value={field.value}
+                onValueChange={(value) => {
+                  field.onChange(value)
+                  if (!HEARD_FROM_FOLLOW_UP_BY_VALUE[value]) {
+                    form.setValue('heard_from_detail', '', { shouldDirty: true })
+                  }
+                }}
+              >
                 <SelectTrigger_Shadcn_ className="w-full">
-                  <SelectValue_Shadcn_ />
+                  <SelectValue_Shadcn_ placeholder="Select an option" />
                 </SelectTrigger_Shadcn_>
 
                 <SelectContent_Shadcn_>
-                  {Object.entries(ORG_KIND_TYPES).map(([k, v]) => (
-                    <SelectItem_Shadcn_ key={k} value={k}>
-                      {v}
+                  {HEARD_FROM_OPTIONS.map((option) => (
+                    <SelectItem_Shadcn_ key={option.value} value={option.value}>
+                      {option.label}
                     </SelectItem_Shadcn_>
                   ))}
                 </SelectContent_Shadcn_>
               </Select_Shadcn_>
-            </FormControl>
-          </FormItemLayout>
-        )}
-      />
 
-      {selectedOrgKind == 'COMPANY' && (
-        <FormField
-          control={form.control}
-          name="size"
-          render={({ field }) => (
-            <FormItemLayout
-              label="Company size"
-              layout="horizontal"
-              description="How many people are in your company?"
-            >
-              <FormControl>
-                <Select_Shadcn_ value={field.value} onValueChange={field.onChange}>
-                  <SelectTrigger_Shadcn_ className="w-full">
-                    <SelectValue_Shadcn_ />
-                  </SelectTrigger_Shadcn_>
-
-                  <SelectContent_Shadcn_>
-                    {Object.entries(ORG_SIZE_TYPES).map(([k, v]) => (
-                      <SelectItem_Shadcn_ key={k} value={k}>
-                        {v}
-                      </SelectItem_Shadcn_>
-                    ))}
-                  </SelectContent_Shadcn_>
-                </Select_Shadcn_>
-              </FormControl>
-            </FormItemLayout>
-          )}
-        />
-      )}
-
-      <FormField
-        control={form.control}
-        name="heard_from"
-        render={({ field }) => (
-          <FormItemLayout
-            label="Source"
-            layout="horizontal"
-            description="Where did you hear about us?"
-          >
-            <FormControl>
-              <div className="flex flex-col gap-y-2">
-                <Select_Shadcn_
-                  value={field.value}
-                  onValueChange={(value) => {
-                    field.onChange(value)
-                    if (!HEARD_FROM_FOLLOW_UP_BY_VALUE[value]) {
-                      form.setValue('heard_from_detail', '', { shouldDirty: true })
-                    }
-                  }}
-                >
-                  <SelectTrigger_Shadcn_ className="w-full">
-                    <SelectValue_Shadcn_ placeholder="Select an option" />
-                  </SelectTrigger_Shadcn_>
-
-                  <SelectContent_Shadcn_>
-                    {HEARD_FROM_OPTIONS.map((option) => (
-                      <SelectItem_Shadcn_ key={option.value} value={option.value}>
-                        {option.label}
-                      </SelectItem_Shadcn_>
-                    ))}
-                  </SelectContent_Shadcn_>
-                </Select_Shadcn_>
-
-                {heardFromFollowUp && (
-                  <Input_Shadcn_
-                    aria-label={heardFromFollowUp.label}
-                    value={selectedHeardFromDetail ?? ''}
-                    placeholder={heardFromFollowUp.placeholder}
-                    onChange={(event) =>
-                      form.setValue('heard_from_detail', event.target.value, {
-                        shouldDirty: true,
-                      })
-                    }
-                  />
-                )}
-              </div>
-            </FormControl>
-          </FormItemLayout>
-        )}
-      />
-      <FormField
-        control={form.control}
-        name="building"
-        render={({ field }) => (
-          <FormItemLayout label="Project" layout="horizontal" description={buildingDescription}>
-            <FormControl>
-              <div className="flex flex-col gap-y-1">
-                <Textarea
-                  {...field}
-                  value={field.value ?? ''}
-                  rows={3}
-                  maxLength={BUILDING_MAX_LENGTH}
-                  placeholder={buildingPlaceholder}
-                  className="resize-none"
+              {heardFromFollowUp && (
+                <Input_Shadcn_
+                  aria-label={heardFromFollowUp.label}
+                  value={selectedHeardFromDetail ?? ''}
+                  placeholder={heardFromFollowUp.placeholder}
+                  onChange={(event) =>
+                    form.setValue('heard_from_detail', event.target.value, {
+                      shouldDirty: true,
+                    })
+                  }
                 />
-                <span className="self-end text-xs text-foreground-lighter">
-                  {(field.value ?? '').length}/{BUILDING_MAX_LENGTH}
-                </span>
-              </div>
-            </FormControl>
-          </FormItemLayout>
-        )}
-      />
+              )}
+            </div>
+          </FormControl>
+        </FormItemLayout>
+      )}
+    />
+  )
+
+  const buildingField = (
+    <FormField
+      control={form.control}
+      name="building"
+      render={({ field }) => (
+        <FormItemLayout label="Project" layout="horizontal" description={buildingDescription}>
+          <FormControl>
+            <div className="flex flex-col gap-y-1">
+              <Textarea
+                {...field}
+                value={field.value ?? ''}
+                rows={3}
+                maxLength={BUILDING_MAX_LENGTH}
+                placeholder={buildingPlaceholder}
+                className="resize-none"
+              />
+              <span className="self-end text-xs text-foreground-lighter">
+                {(field.value ?? '').length}/{BUILDING_MAX_LENGTH}
+              </span>
+            </div>
+          </FormControl>
+        </FormItemLayout>
+      )}
+    />
+  )
+
+  const onboardingSurveyFields = (
+    <div className="flex flex-col gap-y-5">
+      {orgKindField}
+      {orgSizeField}
+      {heardFromField}
+      {buildingField}
     </div>
   )
 
@@ -706,17 +718,12 @@ export const NewOrgForm = ({
             )}
 
             {showOnboardingSurveyInline ? (
-              <Panel.Content>
-                <div className="flex flex-col gap-y-5">
-                  <div className="space-y-1">
-                    <p className="text-sm text-foreground">Help us tailor your setup</p>
-                    <p className="text-xs text-foreground-lighter">
-                      Optional questions to help us improve your onboarding
-                    </p>
-                  </div>
-                  {onboardingSurveyFields}
-                </div>
-              </Panel.Content>
+              <>
+                <Panel.Content>{orgKindField}</Panel.Content>
+                {orgSizeField && <Panel.Content>{orgSizeField}</Panel.Content>}
+                <Panel.Content>{heardFromField}</Panel.Content>
+                <Panel.Content>{buildingField}</Panel.Content>
+              </>
             ) : (
               <ProjectCreationCollapsibleSection
                 title="Help us tailor your setup"
