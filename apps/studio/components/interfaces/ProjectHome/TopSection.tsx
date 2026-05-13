@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react'
 import { Badge, cn, Tooltip, TooltipContent, TooltipTrigger } from 'ui'
 
 import { InstanceConfiguration } from '../Settings/Infrastructure/InfrastructureConfiguration/InstanceConfiguration'
-import { HighAvailabilityBadge } from './HighAvailabilityBadge'
 import {
   OnboardingSurveyEmbeddedPrompt,
   OnboardingSurveyInlinePrompt,
@@ -12,13 +11,10 @@ import {
 import { ActivityStats } from '@/components/interfaces/ProjectHome/ActivityStats'
 import { ProjectConnectionPopover } from '@/components/interfaces/ProjectHome/ProjectConnectionPopover'
 import { ProjectPausedState } from '@/components/layouts/ProjectLayout/PausedState/ProjectPausedState'
-import { ComputeBadgeWrapper } from '@/components/ui/ComputeBadgeWrapper'
 import { InlineLink } from '@/components/ui/InlineLink'
 import { ProjectUpgradeFailedBanner } from '@/components/ui/ProjectUpgradeFailedBanner'
 import { useBranchesQuery } from '@/data/branches/branches-query'
 import { useProjectDetailQuery } from '@/data/projects/project-detail-query'
-import { useResourceWarningsQuery } from '@/data/usage/resource-warnings-query'
-import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
 import { useIsOrioleDb, useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { DOCS_URL, PROJECT_STATUS } from '@/lib/constants'
 
@@ -30,9 +26,6 @@ export const TopSection = ({ mockBuildingSurveyVariant }: TopSectionProps) => {
   const [isMockBuildingSurveyHidden, setIsMockBuildingSurveyHidden] = useState(false)
   const isOrioleDb = useIsOrioleDb()
   const { data: project } = useSelectedProjectQuery()
-  const { data: organization } = useSelectedOrganizationQuery()
-  const { data: resourceWarnings } = useResourceWarningsQuery({ slug: organization?.slug })
-  const projectResourceWarnings = resourceWarnings?.find((w) => w.project === project?.ref)
   const { data: parentProject } = useProjectDetailQuery({ ref: project?.parent_project_ref })
 
   const { data: branches } = useBranchesQuery({
@@ -76,31 +69,21 @@ export const TopSection = ({ mockBuildingSurveyVariant }: TopSectionProps) => {
               )}
               <div className="flex items-center gap-x-2">
                 <h1 className="text-3xl">{projectName}</h1>
-                <div className="flex items-center gap-x-2">
-                  {isOrioleDb && (
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Badge variant="warning">OrioleDB</Badge>
-                      </TooltipTrigger>
-                      <TooltipContent side="bottom" align="start" className="max-w-80 text-center">
-                        This project is using Postgres with OrioleDB which is currently in preview
-                        and not suitable for production workloads. View our{' '}
-                        <InlineLink href={`${DOCS_URL}/guides/database/orioledb`}>
-                          documentation
-                        </InlineLink>{' '}
-                        for all limitations.
-                      </TooltipContent>
-                    </Tooltip>
-                  )}
-                  <ComputeBadgeWrapper
-                    projectRef={project?.ref}
-                    slug={organization?.slug}
-                    cloudProvider={project?.cloud_provider}
-                    computeSize={project?.infra_compute_size}
-                    resourceWarnings={projectResourceWarnings}
-                  />
-                  {project?.high_availability && <HighAvailabilityBadge />}
-                </div>
+                {isOrioleDb && (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Badge variant="warning">OrioleDB</Badge>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom" align="start" className="max-w-80 text-center">
+                      This project is using Postgres with OrioleDB which is currently in preview and
+                      not suitable for production workloads. View our{' '}
+                      <InlineLink href={`${DOCS_URL}/guides/database/orioledb`}>
+                        documentation
+                      </InlineLink>{' '}
+                      for all limitations.
+                    </TooltipContent>
+                  </Tooltip>
+                )}
               </div>
               <ProjectConnectionPopover projectRef={project?.ref} />
             </div>
