@@ -53,12 +53,21 @@ export const ProjectHome = () => {
     onboardingSurveyPromptOverride === '1' ||
     onboardingSurveyPromptOverride === 'true' ||
     onboardingSurveyPromptOverride === 'dialog' ||
+    onboardingSurveyPromptOverride === 'dialog_with_org_fields' ||
     onboardingSurveyPromptOverride === 'project_home'
   const shouldForceOnboardingSurveyBuildingState =
     onboardingSurveyPromptOverride === 'building_state' ||
-    onboardingSurveyPromptOverride === 'building_state_inline'
+    onboardingSurveyPromptOverride === 'building_state_inline' ||
+    onboardingSurveyPromptOverride === 'building_state_with_org_fields' ||
+    onboardingSurveyPromptOverride === 'building_state_inline_with_org_fields'
+  const shouldShowOnboardingSurveyOrgFields =
+    onboardingSurveyPromptOverride === 'dialog_with_org_fields' ||
+    onboardingSurveyPromptOverride === 'toast_with_org_fields' ||
+    onboardingSurveyPromptOverride === 'building_state_with_org_fields' ||
+    onboardingSurveyPromptOverride === 'building_state_inline_with_org_fields'
   const mockBuildingSurveyVariant = shouldForceOnboardingSurveyBuildingState
-    ? onboardingSurveyPromptOverride === 'building_state_inline'
+    ? onboardingSurveyPromptOverride === 'building_state_inline' ||
+      onboardingSurveyPromptOverride === 'building_state_inline_with_org_fields'
       ? 'embedded'
       : 'dialog'
     : undefined
@@ -117,7 +126,10 @@ export const ProjectHome = () => {
   return (
     <ProjectNeedsSecuring>
       {shouldShowOnboardingSurveyToast && (
-        <OnboardingSurveyToastPrompt autoOpen={isComingUp || shouldForceOnboardingSurveyDialog} />
+        <OnboardingSurveyToastPrompt
+          autoOpen={isComingUp || shouldForceOnboardingSurveyDialog}
+          showOrgFields={shouldShowOnboardingSurveyOrgFields}
+        />
       )}
       <div className="w-full h-full">
         <ScaffoldContainer size="large" className={cn(isPaused && 'h-full')}>
@@ -125,7 +137,10 @@ export const ProjectHome = () => {
             isFullWidth
             className={cn(isPaused ? 'h-full flex justify-center p-0!' : 'pb-0')}
           >
-            <TopSection mockBuildingSurveyVariant={mockBuildingSurveyVariant} />
+            <TopSection
+              mockBuildingSurveyVariant={mockBuildingSurveyVariant}
+              showMockBuildingSurveyOrgFields={shouldShowOnboardingSurveyOrgFields}
+            />
           </ScaffoldSection>
         </ScaffoldContainer>
         {!isPaused && (

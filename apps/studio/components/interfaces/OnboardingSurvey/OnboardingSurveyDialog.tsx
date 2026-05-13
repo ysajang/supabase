@@ -24,6 +24,9 @@ import {
   formatHeardFromAnswer,
   HEARD_FROM_FOLLOW_UP_BY_VALUE,
   HEARD_FROM_OPTIONS,
+  ORG_KIND_TYPES,
+  ORG_SIZE_DEFAULT,
+  ORG_SIZE_TYPES,
 } from './OnboardingSurvey.constants'
 
 type OnboardingSurveyDialogProps = {
@@ -34,6 +37,7 @@ type OnboardingSurveyDialogProps = {
   onOpenChange: (open: boolean) => void
   onSkip: () => void
   onSubmit: (values: { heard_from?: string; building?: string }) => Promise<unknown> | unknown
+  showOrgFields?: boolean
   title?: string
 }
 
@@ -45,12 +49,20 @@ export function OnboardingSurveyDialog({
   onOpenChange,
   onSkip,
   onSubmit,
+  showOrgFields = false,
   title = 'Help us tailor your setup',
 }: OnboardingSurveyDialogProps) {
+  const [orgKind, setOrgKind] = useState<keyof typeof ORG_KIND_TYPES>('COMPANY')
+  const [orgSize, setOrgSize] = useState<keyof typeof ORG_SIZE_TYPES>(ORG_SIZE_DEFAULT)
   const [heardFrom, setHeardFrom] = useState('')
   const [heardFromDetail, setHeardFromDetail] = useState('')
   const [building, setBuilding] = useState('')
   const heardFromFollowUp = HEARD_FROM_FOLLOW_UP_BY_VALUE[heardFrom]
+  const dialogDescription =
+    showOrgFields &&
+    description === 'Answer two optional questions so we can improve your Supabase experience.'
+      ? 'Answer a few optional questions so we can improve your Supabase experience.'
+      : description
 
   const handleOpenChange = (nextOpen: boolean) => {
     if (!nextOpen && open && !isSubmitting) {
@@ -76,7 +88,57 @@ export function OnboardingSurveyDialog({
         </DialogHeader>
         <DialogSectionSeparator />
         <DialogSection className="flex flex-col gap-y-6 pt-4.5 pb-5">
-          <p className="text-sm text-foreground-light">{description}</p>
+          <p className="text-sm text-foreground-light">{dialogDescription}</p>
+
+          {showOrgFields && (
+            <>
+              <div className="flex flex-col gap-y-2">
+                <Label_Shadcn_ htmlFor="onboarding-survey-org-kind">Type</Label_Shadcn_>
+                <Select_Shadcn_
+                  value={orgKind}
+                  onValueChange={(value) => setOrgKind(value as keyof typeof ORG_KIND_TYPES)}
+                >
+                  <SelectTrigger_Shadcn_ id="onboarding-survey-org-kind" className="w-full">
+                    <SelectValue_Shadcn_ />
+                  </SelectTrigger_Shadcn_>
+                  <SelectContent_Shadcn_>
+                    {Object.entries(ORG_KIND_TYPES).map(([value, label]) => (
+                      <SelectItem_Shadcn_ key={value} value={value}>
+                        {label}
+                      </SelectItem_Shadcn_>
+                    ))}
+                  </SelectContent_Shadcn_>
+                </Select_Shadcn_>
+                <p className="text-xs text-foreground-lighter">
+                  What best describes your organization?
+                </p>
+              </div>
+
+              {orgKind === 'COMPANY' && (
+                <div className="flex flex-col gap-y-2">
+                  <Label_Shadcn_ htmlFor="onboarding-survey-org-size">Company size</Label_Shadcn_>
+                  <Select_Shadcn_
+                    value={orgSize}
+                    onValueChange={(value) => setOrgSize(value as keyof typeof ORG_SIZE_TYPES)}
+                  >
+                    <SelectTrigger_Shadcn_ id="onboarding-survey-org-size" className="w-full">
+                      <SelectValue_Shadcn_ />
+                    </SelectTrigger_Shadcn_>
+                    <SelectContent_Shadcn_>
+                      {Object.entries(ORG_SIZE_TYPES).map(([value, label]) => (
+                        <SelectItem_Shadcn_ key={value} value={value}>
+                          {label}
+                        </SelectItem_Shadcn_>
+                      ))}
+                    </SelectContent_Shadcn_>
+                  </Select_Shadcn_>
+                  <p className="text-xs text-foreground-lighter">
+                    How many people are in your company?
+                  </p>
+                </div>
+              )}
+            </>
+          )}
 
           <div className="flex flex-col gap-y-2">
             <Label_Shadcn_ htmlFor="onboarding-survey-heard-from">

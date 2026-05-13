@@ -20,9 +20,13 @@ import { DOCS_URL, PROJECT_STATUS } from '@/lib/constants'
 
 type TopSectionProps = {
   mockBuildingSurveyVariant?: 'dialog' | 'embedded'
+  showMockBuildingSurveyOrgFields?: boolean
 }
 
-export const TopSection = ({ mockBuildingSurveyVariant }: TopSectionProps) => {
+export const TopSection = ({
+  mockBuildingSurveyVariant,
+  showMockBuildingSurveyOrgFields = false,
+}: TopSectionProps) => {
   const [isMockBuildingSurveyHidden, setIsMockBuildingSurveyHidden] = useState(false)
   const isOrioleDb = useIsOrioleDb()
   const { data: project } = useSelectedProjectQuery()
@@ -96,10 +100,14 @@ export const TopSection = ({ mockBuildingSurveyVariant }: TopSectionProps) => {
           {showMockBuildingSurvey && mockBuildingSurveyVariant === 'embedded' ? (
             <OnboardingSurveyEmbeddedPrompt
               className="flex min-h-[400px] flex-col md:min-h-[500px]"
+              showOrgFields={showMockBuildingSurveyOrgFields}
               onClose={() => setIsMockBuildingSurveyHidden(true)}
             />
           ) : showMockBuildingSurvey ? (
-            <OnboardingSurveyInlinePrompt className="flex min-h-[400px] flex-col justify-center md:min-h-[500px]" />
+            <OnboardingSurveyInlinePrompt
+              className="flex min-h-[400px] flex-col justify-center md:min-h-[500px]"
+              showOrgFields={showMockBuildingSurveyOrgFields}
+            />
           ) : (
             <div
               className={cn(

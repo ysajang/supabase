@@ -19,6 +19,9 @@ import {
   formatHeardFromAnswer,
   HEARD_FROM_FOLLOW_UP_BY_VALUE,
   HEARD_FROM_OPTIONS,
+  ORG_KIND_TYPES,
+  ORG_SIZE_DEFAULT,
+  ORG_SIZE_TYPES,
 } from './OnboardingSurvey.constants'
 import { useOnboardingSurveyPrompt } from './useOnboardingSurveyPrompt'
 
@@ -27,13 +30,17 @@ const CONTENT_TRANSITION_MS = 160
 type OnboardingSurveyEmbeddedPromptProps = {
   className?: string
   onClose?: () => void
+  showOrgFields?: boolean
 }
 
 export function OnboardingSurveyEmbeddedPrompt({
   className,
   onClose,
+  showOrgFields = false,
 }: OnboardingSurveyEmbeddedPromptProps) {
   const prompt = useOnboardingSurveyPrompt({ surface: 'building_state' })
+  const [orgKind, setOrgKind] = useState<keyof typeof ORG_KIND_TYPES>('COMPANY')
+  const [orgSize, setOrgSize] = useState<keyof typeof ORG_SIZE_TYPES>(ORG_SIZE_DEFAULT)
   const [heardFrom, setHeardFrom] = useState('')
   const [heardFromDetail, setHeardFromDetail] = useState('')
   const [building, setBuilding] = useState('')
@@ -112,11 +119,71 @@ export function OnboardingSurveyEmbeddedPrompt({
             <div className="space-y-1 pr-8 text-left">
               <h4 className="text-base text-foreground">Whilst you wait</h4>
               <p className="text-sm text-foreground-light text-balance">
-                Share what brought you here so we can tailor your experience.
+                {showOrgFields
+                  ? 'Share a few details about your organization so we can tailor your experience.'
+                  : 'Share what brought you here so we can tailor your experience.'}
               </p>
             </div>
 
             <div className="flex w-full flex-col gap-y-4">
+              {showOrgFields && (
+                <>
+                  <div className="flex flex-col gap-y-2">
+                    <Label_Shadcn_ htmlFor="onboarding-survey-inline-org-kind">Type</Label_Shadcn_>
+                    <Select_Shadcn_
+                      value={orgKind}
+                      onValueChange={(value) => setOrgKind(value as keyof typeof ORG_KIND_TYPES)}
+                    >
+                      <SelectTrigger_Shadcn_
+                        id="onboarding-survey-inline-org-kind"
+                        className="w-full bg-surface-100"
+                      >
+                        <SelectValue_Shadcn_ />
+                      </SelectTrigger_Shadcn_>
+                      <SelectContent_Shadcn_>
+                        {Object.entries(ORG_KIND_TYPES).map(([value, label]) => (
+                          <SelectItem_Shadcn_ key={value} value={value}>
+                            {label}
+                          </SelectItem_Shadcn_>
+                        ))}
+                      </SelectContent_Shadcn_>
+                    </Select_Shadcn_>
+                    <p className="text-xs text-foreground-lighter">
+                      What best describes your organization?
+                    </p>
+                  </div>
+
+                  {orgKind === 'COMPANY' && (
+                    <div className="flex flex-col gap-y-2">
+                      <Label_Shadcn_ htmlFor="onboarding-survey-inline-org-size">
+                        Company size
+                      </Label_Shadcn_>
+                      <Select_Shadcn_
+                        value={orgSize}
+                        onValueChange={(value) => setOrgSize(value as keyof typeof ORG_SIZE_TYPES)}
+                      >
+                        <SelectTrigger_Shadcn_
+                          id="onboarding-survey-inline-org-size"
+                          className="w-full bg-surface-100"
+                        >
+                          <SelectValue_Shadcn_ />
+                        </SelectTrigger_Shadcn_>
+                        <SelectContent_Shadcn_>
+                          {Object.entries(ORG_SIZE_TYPES).map(([value, label]) => (
+                            <SelectItem_Shadcn_ key={value} value={value}>
+                              {label}
+                            </SelectItem_Shadcn_>
+                          ))}
+                        </SelectContent_Shadcn_>
+                      </Select_Shadcn_>
+                      <p className="text-xs text-foreground-lighter">
+                        How many people are in your company?
+                      </p>
+                    </div>
+                  )}
+                </>
+              )}
+
               <div className="flex flex-col gap-y-2">
                 <Label_Shadcn_ htmlFor="onboarding-survey-inline-heard-from">
                   Where did you hear about us?

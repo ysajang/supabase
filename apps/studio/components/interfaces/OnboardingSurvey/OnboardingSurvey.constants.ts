@@ -64,6 +64,27 @@ export const BUILDING_MAX_LENGTH = 500
 export const BUILDING_PLACEHOLDER =
   'e.g. realtime collaboration, an AI support workflow, or an operations dashboard'
 
+export const ORG_KIND_TYPES = {
+  PERSONAL: 'Personal',
+  EDUCATIONAL: 'Educational',
+  STARTUP: 'Startup',
+  AGENCY: 'Agency',
+  COMPANY: 'Company',
+  UNDISCLOSED: 'N/A',
+}
+
+export const ORG_KIND_DEFAULT = 'PERSONAL'
+
+export const ORG_SIZE_TYPES = {
+  '1': '1 - 10',
+  '10': '10 - 49',
+  '50': '50 - 99',
+  '100': '100 - 299',
+  '300': 'More than 300',
+}
+
+export const ORG_SIZE_DEFAULT = '1'
+
 export type OnboardingSurveySurface = 'building_state' | 'project_home' | 'org_form'
 
 export const ONBOARDING_SURVEY_PROMPT_QUERY_PARAM = 'onboardingSurveyPrompt'
@@ -84,7 +105,14 @@ export function shouldForceOnboardingSurveyPrompt({
     override === 'true' ||
     override === surface ||
     (surface === 'building_state' && override === 'building_state_inline') ||
-    (surface === 'project_home' && (override === 'dialog' || override === 'toast'))
+    (surface === 'building_state' &&
+      (override === 'building_state_with_org_fields' ||
+        override === 'building_state_inline_with_org_fields')) ||
+    (surface === 'project_home' &&
+      (override === 'dialog' ||
+        override === 'dialog_with_org_fields' ||
+        override === 'toast' ||
+        override === 'toast_with_org_fields'))
   )
 }
 

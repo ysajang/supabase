@@ -5,9 +5,13 @@ import { useOnboardingSurveyPrompt } from './useOnboardingSurveyPrompt'
 
 type OnboardingSurveyInlinePromptProps = {
   className?: string
+  showOrgFields?: boolean
 }
 
-export function OnboardingSurveyInlinePrompt({ className }: OnboardingSurveyInlinePromptProps) {
+export function OnboardingSurveyInlinePrompt({
+  className,
+  showOrgFields = false,
+}: OnboardingSurveyInlinePromptProps) {
   const prompt = useOnboardingSurveyPrompt({ surface: 'building_state' })
 
   if (!prompt.shouldShowPrompt) return null
@@ -24,7 +28,9 @@ export function OnboardingSurveyInlinePrompt({ className }: OnboardingSurveyInli
         <div className="relative max-w-lg space-y-1 text-center">
           <h4 className="text-base text-foreground">Whilst you wait</h4>
           <p className="text-sm text-foreground-light text-balance">
-            Share what brought you here and what you are building so we can tailor your experience.
+            {showOrgFields
+              ? 'Share a few details about your organization and what you are building so we can tailor your experience.'
+              : 'Share what brought you here and what you are building so we can tailor your experience.'}
           </p>
         </div>
         <Button type="default" size="tiny" className="relative w-fit" onClick={prompt.openDialog}>
@@ -37,6 +43,7 @@ export function OnboardingSurveyInlinePrompt({ className }: OnboardingSurveyInli
         onDismiss={() => prompt.dismissPrompt('dialog_dismissed')}
         onOpenChange={prompt.setOpen}
         onSkip={() => prompt.dismissPrompt('skip_button')}
+        showOrgFields={showOrgFields}
         onSubmit={prompt.submitSurvey}
       />
     </>

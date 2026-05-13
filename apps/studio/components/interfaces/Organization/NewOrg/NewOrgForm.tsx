@@ -43,8 +43,14 @@ import {
   BUILDING_MAX_LENGTH,
   BUILDING_PLACEHOLDER,
   formatHeardFromAnswer,
+  getOnboardingSurveyPromptOverride,
   HEARD_FROM_FOLLOW_UP_BY_VALUE,
   HEARD_FROM_OPTIONS,
+  ONBOARDING_SURVEY_PROMPT_QUERY_PARAM,
+  ORG_KIND_DEFAULT,
+  ORG_KIND_TYPES,
+  ORG_SIZE_DEFAULT,
+  ORG_SIZE_TYPES,
 } from '@/components/interfaces/OnboardingSurvey'
 import { ProjectCreationCollapsibleSection } from '@/components/interfaces/ProjectCreation/ProjectCreationCollapsibleSection'
 import { InlineLink } from '@/components/ui/InlineLink'
@@ -62,25 +68,6 @@ import { useLocalStorageQuery } from '@/hooks/misc/useLocalStorage'
 import { PRICING_TIER_LABELS_ORG, STRIPE_PUBLIC_KEY } from '@/lib/constants'
 import { useProfile } from '@/lib/profile'
 import { useTrack } from '@/lib/telemetry/track'
-
-const ORG_KIND_TYPES = {
-  PERSONAL: 'Personal',
-  EDUCATIONAL: 'Educational',
-  STARTUP: 'Startup',
-  AGENCY: 'Agency',
-  COMPANY: 'Company',
-  UNDISCLOSED: 'N/A',
-}
-const ORG_KIND_DEFAULT = 'PERSONAL'
-
-const ORG_SIZE_TYPES = {
-  '1': '1 - 10',
-  '10': '10 - 49',
-  '50': '50 - 99',
-  '100': '100 - 299',
-  '300': 'More than 300',
-}
-const ORG_SIZE_DEFAULT = '1'
 
 interface NewOrgFormProps {
   onPaymentMethodReset: () => void
@@ -242,8 +229,13 @@ export const NewOrgForm = ({
 
   const selectedPlan = form.watch('plan')
   const selectedSpendCap = form.watch('spend_cap')
+  const selectedOrgKind = form.watch('kind')
   const selectedHeardFrom = form.watch('heard_from')
   const selectedHeardFromDetail = form.watch('heard_from_detail')
+  const onboardingSurveyPromptOverride = getOnboardingSurveyPromptOverride(
+    router.query[ONBOARDING_SURVEY_PROMPT_QUERY_PARAM]
+  )
+  const showOnboardingSurveyInline = onboardingSurveyPromptOverride === 'org_form_inline'
   const heardFromFollowUp = selectedHeardFrom
     ? HEARD_FROM_FOLLOW_UP_BY_VALUE[selectedHeardFrom]
     : undefined
@@ -459,6 +451,142 @@ export const NewOrgForm = ({
     return onPaymentMethodReset()
   }
 
+  const onboardingSurveyFields = (
+    <div className="flex flex-col gap-y-5">
+      <FormField
+        control={form.control}
+        name="kind"
+        render={({ field }) => (
+          <FormItemLayout
+            label="Type"
+            layout="horizontal"
+            description="What best describes your organization?"
+          >
+            <FormControl>
+              <Select_Shadcn_ value={field.value} onValueChange={field.onChange}>
+                <SelectTrigger_Shadcn_ className="w-full">
+                  <SelectValue_Shadcn_ />
+                </SelectTrigger_Shadcn_>
+
+                <SelectContent_Shadcn_>
+                  {Object.entries(ORG_KIND_TYPES).map(([k, v]) => (
+                    <SelectItem_Shadcn_ key={k} value={k}>
+                      {v}
+                    </SelectItem_Shadcn_>
+                  ))}
+                </SelectContent_Shadcn_>
+              </Select_Shadcn_>
+            </FormControl>
+          </FormItemLayout>
+        )}
+      />
+
+      {selectedOrgKind == 'COMPANY' && (
+        <FormField
+          control={form.control}
+          name="size"
+          render={({ field }) => (
+            <FormItemLayout
+              label="Company size"
+              layout="horizontal"
+              description="How many people are in your company?"
+            >
+              <FormControl>
+                <Select_Shadcn_ value={field.value} onValueChange={field.onChange}>
+                  <SelectTrigger_Shadcn_ className="w-full">
+                    <SelectValue_Shadcn_ />
+                  </SelectTrigger_Shadcn_>
+
+                  <SelectContent_Shadcn_>
+                    {Object.entries(ORG_SIZE_TYPES).map(([k, v]) => (
+                      <SelectItem_Shadcn_ key={k} value={k}>
+                        {v}
+                      </SelectItem_Shadcn_>
+                    ))}
+                  </SelectContent_Shadcn_>
+                </Select_Shadcn_>
+              </FormControl>
+            </FormItemLayout>
+          )}
+        />
+      )}
+
+      <FormField
+        control={form.control}
+        name="heard_from"
+        render={({ field }) => (
+          <FormItemLayout
+            label="Source"
+            layout="horizontal"
+            description="Where did you hear about us?"
+          >
+            <FormControl>
+              <div className="flex flex-col gap-y-2">
+                <Select_Shadcn_
+                  value={field.value}
+                  onValueChange={(value) => {
+                    field.onChange(value)
+                    if (!HEARD_FROM_FOLLOW_UP_BY_VALUE[value]) {
+                      form.setValue('heard_from_detail', '', { shouldDirty: true })
+                    }
+                  }}
+                >
+                  <SelectTrigger_Shadcn_ className="w-full">
+                    <SelectValue_Shadcn_ placeholder="Select an option" />
+                  </SelectTrigger_Shadcn_>
+
+                  <SelectContent_Shadcn_>
+                    {HEARD_FROM_OPTIONS.map((option) => (
+                      <SelectItem_Shadcn_ key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem_Shadcn_>
+                    ))}
+                  </SelectContent_Shadcn_>
+                </Select_Shadcn_>
+
+                {heardFromFollowUp && (
+                  <Input_Shadcn_
+                    aria-label={heardFromFollowUp.label}
+                    value={selectedHeardFromDetail ?? ''}
+                    placeholder={heardFromFollowUp.placeholder}
+                    onChange={(event) =>
+                      form.setValue('heard_from_detail', event.target.value, {
+                        shouldDirty: true,
+                      })
+                    }
+                  />
+                )}
+              </div>
+            </FormControl>
+          </FormItemLayout>
+        )}
+      />
+      <FormField
+        control={form.control}
+        name="building"
+        render={({ field }) => (
+          <FormItemLayout label="Project" layout="horizontal" description="What are you building?">
+            <FormControl>
+              <div className="flex flex-col gap-y-1">
+                <Textarea
+                  {...field}
+                  value={field.value ?? ''}
+                  rows={3}
+                  maxLength={BUILDING_MAX_LENGTH}
+                  placeholder={BUILDING_PLACEHOLDER}
+                  className="resize-none"
+                />
+                <span className="self-end text-xs text-foreground-lighter">
+                  {(field.value ?? '').length}/{BUILDING_MAX_LENGTH}
+                </span>
+              </div>
+            </FormControl>
+          </FormItemLayout>
+        )}
+      />
+    </div>
+  )
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} id={FORM_ID}>
@@ -572,148 +700,26 @@ export const NewOrgForm = ({
               </Panel.Content>
             )}
 
-            <ProjectCreationCollapsibleSection
-              title="Help us tailor your setup"
-              description="Optional questions to help us improve your onboarding"
-            >
-              <div className="flex flex-col gap-y-5">
-                <FormField
-                  control={form.control}
-                  name="kind"
-                  render={({ field }) => (
-                    <FormItemLayout
-                      label="Type"
-                      layout="horizontal"
-                      description="What best describes your organization?"
-                    >
-                      <FormControl>
-                        <Select_Shadcn_ value={field.value} onValueChange={field.onChange}>
-                          <SelectTrigger_Shadcn_ className="w-full">
-                            <SelectValue_Shadcn_ />
-                          </SelectTrigger_Shadcn_>
-
-                          <SelectContent_Shadcn_>
-                            {Object.entries(ORG_KIND_TYPES).map(([k, v]) => (
-                              <SelectItem_Shadcn_ key={k} value={k}>
-                                {v}
-                              </SelectItem_Shadcn_>
-                            ))}
-                          </SelectContent_Shadcn_>
-                        </Select_Shadcn_>
-                      </FormControl>
-                    </FormItemLayout>
-                  )}
-                />
-
-                {form.watch('kind') == 'COMPANY' && (
-                  <FormField
-                    control={form.control}
-                    name="size"
-                    render={({ field }) => (
-                      <FormItemLayout
-                        label="Company size"
-                        layout="horizontal"
-                        description="How many people are in your company?"
-                      >
-                        <FormControl>
-                          <Select_Shadcn_ value={field.value} onValueChange={field.onChange}>
-                            <SelectTrigger_Shadcn_ className="w-full">
-                              <SelectValue_Shadcn_ />
-                            </SelectTrigger_Shadcn_>
-
-                            <SelectContent_Shadcn_>
-                              {Object.entries(ORG_SIZE_TYPES).map(([k, v]) => (
-                                <SelectItem_Shadcn_ key={k} value={k}>
-                                  {v}
-                                </SelectItem_Shadcn_>
-                              ))}
-                            </SelectContent_Shadcn_>
-                          </Select_Shadcn_>
-                        </FormControl>
-                      </FormItemLayout>
-                    )}
-                  />
-                )}
-
-                <FormField
-                  control={form.control}
-                  name="heard_from"
-                  render={({ field }) => (
-                    <FormItemLayout
-                      label="Source"
-                      layout="horizontal"
-                      description="Where did you hear about us?"
-                    >
-                      <FormControl>
-                        <div className="flex flex-col gap-y-2">
-                          <Select_Shadcn_
-                            value={field.value}
-                            onValueChange={(value) => {
-                              field.onChange(value)
-                              if (!HEARD_FROM_FOLLOW_UP_BY_VALUE[value]) {
-                                form.setValue('heard_from_detail', '', { shouldDirty: true })
-                              }
-                            }}
-                          >
-                            <SelectTrigger_Shadcn_ className="w-full">
-                              <SelectValue_Shadcn_ placeholder="Select an option" />
-                            </SelectTrigger_Shadcn_>
-
-                            <SelectContent_Shadcn_>
-                              {HEARD_FROM_OPTIONS.map((option) => (
-                                <SelectItem_Shadcn_ key={option.value} value={option.value}>
-                                  {option.label}
-                                </SelectItem_Shadcn_>
-                              ))}
-                            </SelectContent_Shadcn_>
-                          </Select_Shadcn_>
-
-                          {heardFromFollowUp && (
-                            <Input_Shadcn_
-                              aria-label={heardFromFollowUp.label}
-                              value={selectedHeardFromDetail ?? ''}
-                              placeholder={heardFromFollowUp.placeholder}
-                              onChange={(event) =>
-                                form.setValue('heard_from_detail', event.target.value, {
-                                  shouldDirty: true,
-                                })
-                              }
-                            />
-                          )}
-                        </div>
-                      </FormControl>
-                    </FormItemLayout>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="building"
-                  render={({ field }) => (
-                    <FormItemLayout
-                      label="Project"
-                      layout="horizontal"
-                      description="What are you building?"
-                    >
-                      <FormControl>
-                        <div className="flex flex-col gap-y-1">
-                          <Textarea
-                            {...field}
-                            value={field.value ?? ''}
-                            rows={3}
-                            maxLength={BUILDING_MAX_LENGTH}
-                            placeholder={BUILDING_PLACEHOLDER}
-                            className="resize-none"
-                          />
-                          <span className="self-end text-xs text-foreground-lighter">
-                            {(field.value ?? '').length}/{BUILDING_MAX_LENGTH}
-                          </span>
-                        </div>
-                      </FormControl>
-                    </FormItemLayout>
-                  )}
-                />
-              </div>
-            </ProjectCreationCollapsibleSection>
+            {showOnboardingSurveyInline ? (
+              <Panel.Content>
+                <div className="flex flex-col gap-y-5">
+                  <div className="space-y-1">
+                    <p className="text-sm text-foreground">Help us tailor your setup</p>
+                    <p className="text-xs text-foreground-lighter">
+                      Optional questions to help us improve your onboarding
+                    </p>
+                  </div>
+                  {onboardingSurveyFields}
+                </div>
+              </Panel.Content>
+            ) : (
+              <ProjectCreationCollapsibleSection
+                title="Help us tailor your setup"
+                description="Optional questions to help us improve your onboarding"
+              >
+                {onboardingSurveyFields}
+              </ProjectCreationCollapsibleSection>
+            )}
 
             {form.watch('plan') === 'PRO' && (
               <>
