@@ -636,7 +636,7 @@ export const NewOrgForm = ({
 
             <ProjectCreationCollapsibleSection
               title="Help us tailor your setup"
-              description="Optional questions to help us improve your onboarding"
+              description="Optional questions to help us improve your onboarding."
             >
               <div className="flex flex-col gap-y-5">
                 <FormField
