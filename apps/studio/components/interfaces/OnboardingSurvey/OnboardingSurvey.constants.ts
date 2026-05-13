@@ -85,35 +85,100 @@ export const ORG_SIZE_TYPES = {
 
 export const ORG_SIZE_DEFAULT = '1'
 
-export type OnboardingSurveySurface = 'building_state' | 'project_home' | 'org_form'
+export const ONBOARDING_SURVEY_EXPERIMENT_ID = 'onboardingSurveyPlacement'
 
-export const ONBOARDING_SURVEY_PROMPT_QUERY_PARAM = 'onboardingSurveyPrompt'
+export const ONBOARDING_SURVEY_VARIANTS = [
+  'control',
+  'org_form_collapsible',
+  'org_form_inline',
+  'building_state_cta',
+  'building_state_inline',
+  'dialog',
+  'toast',
+] as const
 
-export function getOnboardingSurveyPromptOverride(value?: string | string[]) {
-  return Array.isArray(value) ? value[0] : value
+export type OnboardingSurveyVariant = (typeof ONBOARDING_SURVEY_VARIANTS)[number]
+
+export type OnboardingSurveySurface = 'org_form' | 'building_state' | 'project_home'
+
+const ORG_FORM_VARIANTS: ReadonlySet<OnboardingSurveyVariant> = new Set([
+  'org_form_collapsible',
+  'org_form_inline',
+])
+
+const BUILDING_STATE_VARIANTS: ReadonlySet<OnboardingSurveyVariant> = new Set([
+  'building_state_cta',
+  'building_state_inline',
+])
+
+const PROJECT_HOME_VARIANTS: ReadonlySet<OnboardingSurveyVariant> = new Set(['dialog', 'toast'])
+
+export function isOnboardingSurveyVariant(value: unknown): value is OnboardingSurveyVariant {
+  return (
+    typeof value === 'string' && (ONBOARDING_SURVEY_VARIANTS as readonly string[]).includes(value)
+  )
 }
 
-export function shouldForceOnboardingSurveyPrompt({
-  override,
-  surface,
-}: {
-  override?: string
+export function isOrgFormVariant(variant?: OnboardingSurveyVariant) {
+  return !!variant && ORG_FORM_VARIANTS.has(variant)
+}
+
+export function isPostCreateVariant(variant?: OnboardingSurveyVariant) {
+  return !!variant && (BUILDING_STATE_VARIANTS.has(variant) || PROJECT_HOME_VARIANTS.has(variant))
+}
+
+export function variantMatchesSurface(
+  variant: OnboardingSurveyVariant | undefined,
   surface: OnboardingSurveySurface
-}) {
-  return (
-    override === '1' ||
-    override === 'true' ||
-    override === surface ||
-    (surface === 'building_state' && override === 'building_state_inline') ||
-    (surface === 'building_state' &&
-      (override === 'building_state_with_org_fields' ||
-        override === 'building_state_inline_with_org_fields')) ||
-    (surface === 'project_home' &&
-      (override === 'dialog' ||
-        override === 'dialog_with_org_fields' ||
-        override === 'toast' ||
-        override === 'toast_with_org_fields'))
-  )
+) {
+  if (!variant) return false
+  if (surface === 'org_form') return ORG_FORM_VARIANTS.has(variant)
+  if (surface === 'building_state') return BUILDING_STATE_VARIANTS.has(variant)
+  if (surface === 'project_home') return PROJECT_HOME_VARIANTS.has(variant)
+  return false
+}
+
+export type BuildingSurveyStyle = 'cta' | 'embedded'
+
+export function getBuildingSurveyStyle(
+  variant: OnboardingSurveyVariant | undefined
+): BuildingSurveyStyle | undefined {
+  if (variant === 'building_state_inline') return 'embedded'
+  if (variant === 'building_state_cta') return 'cta'
+  return undefined
+}
+
+export type OnboardingSurveyAnswers = {
+  kind?: string
+  size?: string
+  heard_from?: string
+  building?: string
+}
+
+export function buildOnboardingSurveyAnswers({
+  heardFrom,
+  building,
+  showOrgFields,
+  orgKind,
+  orgSize,
+}: {
+  heardFrom?: string
+  building?: string
+  showOrgFields?: boolean
+  orgKind?: string
+  orgSize?: string
+}): OnboardingSurveyAnswers {
+  const payload: OnboardingSurveyAnswers = {
+    heard_from: heardFrom,
+    building,
+  }
+
+  if (showOrgFields) {
+    payload.kind = orgKind
+    if (orgKind === 'COMPANY') payload.size = orgSize
+  }
+
+  return payload
 }
 
 export type OnboardingSurveyPromptStatus = 'submitted' | 'dismissed'

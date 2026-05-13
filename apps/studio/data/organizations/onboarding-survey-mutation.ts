@@ -1,42 +1,55 @@
 import { useMutation } from '@tanstack/react-query'
 import type { components } from 'api-types'
 
+import { handleError, post } from '@/data/fetchers'
 import type { ResponseError, UseCustomMutationOptions } from '@/types'
 
 export type OnboardingSurveyBody = components['schemas']['OnboardingSurveyBody']
 
 export type OnboardingSurveyVariables = {
   slug: string
+  kind?: string
+  size?: string
   heard_from?: string
   building?: string
 }
 
 export function buildOnboardingSurveyPayload({
   slug,
+  kind,
+  size,
   heard_from,
   building,
 }: OnboardingSurveyVariables): OnboardingSurveyBody {
-  const heardFrom = heard_from?.trim()
-  const buildingValue = building?.trim()
+  const trimmedKind = kind?.trim()
+  const trimmedSize = size?.trim()
+  const trimmedHeardFrom = heard_from?.trim()
+  const trimmedBuilding = building?.trim()
 
   return {
     slug,
-    ...(heardFrom ? { heard_from: heardFrom } : {}),
-    ...(buildingValue ? { building: buildingValue } : {}),
+    ...(trimmedKind ? { kind: trimmedKind } : {}),
+    ...(trimmedSize ? { size: trimmedSize } : {}),
+    ...(trimmedHeardFrom ? { heard_from: trimmedHeardFrom } : {}),
+    ...(trimmedBuilding ? { building: trimmedBuilding } : {}),
   }
 }
 
-export async function submitOnboardingSurveyMock(variables: OnboardingSurveyVariables) {
+export async function submitOnboardingSurvey(variables: OnboardingSurveyVariables) {
   const payload = buildOnboardingSurveyPayload(variables)
 
   if (!payload.slug) {
     throw new Error('Organization slug is required')
   }
 
-  await new Promise((resolve) => setTimeout(resolve, 300))
+  const { error } = await post('/platform/organizations/onboarding-survey', {
+    body: payload,
+  })
+
+  if (error) handleError(error)
 }
 
-type SubmitOnboardingSurveyData = Awaited<ReturnType<typeof submitOnboardingSurveyMock>>
+type SubmitOnboardingSurveyData = Awaited<ReturnType<typeof submitOnboardingSurvey>>
 
 export const useOnboardingSurveyMutation = ({
   ...options
@@ -45,7 +58,7 @@ export const useOnboardingSurveyMutation = ({
   'mutationFn'
 > = {}) => {
   return useMutation<SubmitOnboardingSurveyData, ResponseError, OnboardingSurveyVariables>({
-    mutationFn: (vars) => submitOnboardingSurveyMock(vars),
+    mutationFn: (vars) => submitOnboardingSurvey(vars),
     ...options,
   })
 }

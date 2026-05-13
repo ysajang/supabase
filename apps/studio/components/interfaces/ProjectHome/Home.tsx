@@ -2,7 +2,6 @@ import { DndContext, DragEndEvent, PointerSensor, useSensor, useSensors } from '
 import { arrayMove, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { IS_PLATFORM, useFlag, useParams } from 'common'
 import dayjs from 'dayjs'
-import { useRouter } from 'next/router'
 import { useEffect, useRef } from 'react'
 import { cn } from 'ui'
 
@@ -13,10 +12,9 @@ import { DEFAULT_SECTION_ORDER, mergeSectionOrder } from './Home.utils'
 import { ProjectUsageSection as ProjectUsageSectionV2 } from './ProjectUsageSection'
 import { ProjectUsageSection as ProjectUsageSectionV1 } from '@/components/interfaces/Home/ProjectUsageSection'
 import {
-  getOnboardingSurveyPromptOverride,
-  ONBOARDING_SURVEY_PROMPT_QUERY_PARAM,
+  getBuildingSurveyStyle,
   OnboardingSurveyToastPrompt,
-  shouldForceOnboardingSurveyPrompt,
+  useOnboardingSurveyPrompt,
 } from '@/components/interfaces/OnboardingSurvey'
 import { SortableSection } from '@/components/interfaces/ProjectHome/SortableSection'
 import { TopSection } from '@/components/interfaces/ProjectHome/TopSection'
@@ -29,7 +27,6 @@ import { useTrack } from '@/lib/telemetry/track'
 import { useAppStateSnapshot } from '@/state/app-state'
 
 export const ProjectHome = () => {
-  const router = useRouter()
   const { enableBranching } = useParams()
   const snap = useAppStateSnapshot()
   const { data: project } = useSelectedProjectQuery()
@@ -42,41 +39,22 @@ export const ProjectHome = () => {
   const hasShownEnableBranchingModalRef = useRef(false)
   const isPaused = project?.status === PROJECT_STATUS.INACTIVE
   const isComingUp = project?.status === PROJECT_STATUS.COMING_UP
-  const onboardingSurveyPromptOverride = getOnboardingSurveyPromptOverride(
-    router.query[ONBOARDING_SURVEY_PROMPT_QUERY_PARAM]
-  )
-  const isForcingOnboardingSurveyPrompt = shouldForceOnboardingSurveyPrompt({
-    override: onboardingSurveyPromptOverride,
+  const { variant: onboardingSurveyVariant } = useOnboardingSurveyPrompt({
     surface: 'project_home',
   })
-  const shouldForceOnboardingSurveyDialog =
-    onboardingSurveyPromptOverride === '1' ||
-    onboardingSurveyPromptOverride === 'true' ||
-    onboardingSurveyPromptOverride === 'dialog' ||
-    onboardingSurveyPromptOverride === 'dialog_with_org_fields' ||
-    onboardingSurveyPromptOverride === 'project_home'
-  const shouldForceOnboardingSurveyBuildingState =
-    onboardingSurveyPromptOverride === 'building_state' ||
-    onboardingSurveyPromptOverride === 'building_state_inline' ||
-    onboardingSurveyPromptOverride === 'building_state_with_org_fields' ||
-    onboardingSurveyPromptOverride === 'building_state_inline_with_org_fields'
-  const shouldShowOnboardingSurveyOrgFields =
-    onboardingSurveyPromptOverride === 'dialog_with_org_fields' ||
-    onboardingSurveyPromptOverride === 'toast_with_org_fields' ||
-    onboardingSurveyPromptOverride === 'building_state_with_org_fields' ||
-    onboardingSurveyPromptOverride === 'building_state_inline_with_org_fields'
-  const mockBuildingSurveyVariant = shouldForceOnboardingSurveyBuildingState
-    ? onboardingSurveyPromptOverride === 'building_state_inline' ||
-      onboardingSurveyPromptOverride === 'building_state_inline_with_org_fields'
-      ? 'embedded'
-      : 'dialog'
-    : undefined
   const isRecentlyCreatedProject =
     !!project?.inserted_at && dayjs(project.inserted_at).isAfter(dayjs().subtract(1, 'hour'))
-  const shouldShowOnboardingSurveyToast =
+  const inProvisioningWindow = isComingUp || isRecentlyCreatedProject
+
+  const showOnboardingSurveyToast =
     !!project &&
     !isPaused &&
-    (isComingUp || isRecentlyCreatedProject || isForcingOnboardingSurveyPrompt)
+    inProvisioningWindow &&
+    (onboardingSurveyVariant === 'toast' || onboardingSurveyVariant === 'dialog')
+  const shouldAutoOpenOnboardingSurveyDialog = isComingUp && onboardingSurveyVariant === 'dialog'
+  const buildingSurveyVariant = inProvisioningWindow
+    ? getBuildingSurveyStyle(onboardingSurveyVariant)
+    : undefined
 
   const [sectionOrder, setSectionOrder] = useLocalStorage<string[]>(
     `home-section-order-${project?.ref || 'default'}`,
@@ -125,10 +103,10 @@ export const ProjectHome = () => {
 
   return (
     <ProjectNeedsSecuring>
-      {shouldShowOnboardingSurveyToast && (
+      {showOnboardingSurveyToast && (
         <OnboardingSurveyToastPrompt
-          autoOpen={isComingUp || shouldForceOnboardingSurveyDialog}
-          showOrgFields={shouldShowOnboardingSurveyOrgFields}
+          autoOpen={shouldAutoOpenOnboardingSurveyDialog}
+          showOrgFields
         />
       )}
       <div className="w-full h-full">
@@ -138,8 +116,8 @@ export const ProjectHome = () => {
             className={cn(isPaused ? 'h-full flex justify-center p-0!' : 'pb-0')}
           >
             <TopSection
-              mockBuildingSurveyVariant={mockBuildingSurveyVariant}
-              showMockBuildingSurveyOrgFields={shouldShowOnboardingSurveyOrgFields}
+              buildingSurveyVariant={buildingSurveyVariant}
+              showOnboardingSurveyOrgFields
             />
           </ScaffoldSection>
         </ScaffoldContainer>

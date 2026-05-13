@@ -43,14 +43,15 @@ import {
   BUILDING_MAX_LENGTH,
   BUILDING_PLACEHOLDER,
   formatHeardFromAnswer,
-  getOnboardingSurveyPromptOverride,
   HEARD_FROM_FOLLOW_UP_BY_VALUE,
   HEARD_FROM_OPTIONS,
-  ONBOARDING_SURVEY_PROMPT_QUERY_PARAM,
+  isOrgFormVariant,
+  isPostCreateVariant,
   ORG_KIND_DEFAULT,
   ORG_KIND_TYPES,
   ORG_SIZE_DEFAULT,
   ORG_SIZE_TYPES,
+  useOnboardingSurveyPrompt,
 } from '@/components/interfaces/OnboardingSurvey'
 import { ProjectCreationCollapsibleSection } from '@/components/interfaces/ProjectCreation/ProjectCreationCollapsibleSection'
 import { InlineLink } from '@/components/ui/InlineLink'
@@ -176,21 +177,22 @@ export const NewOrgForm = ({
     },
   })
 
-  const onboardingSurveyPromptOverride = getOnboardingSurveyPromptOverride(
-    router.query[ONBOARDING_SURVEY_PROMPT_QUERY_PARAM]
-  )
-  const showOnboardingSurveyInline = onboardingSurveyPromptOverride === 'org_form_inline'
-  const showOnboardingSurveyMinimal = onboardingSurveyPromptOverride === 'org_form_minimal'
+  const { variant: onboardingSurveyVariant } = useOnboardingSurveyPrompt({
+    surface: 'org_form',
+  })
+  const showOnboardingSurveyInOrgForm = isOrgFormVariant(onboardingSurveyVariant)
+  const showOnboardingSurveyInline = onboardingSurveyVariant === 'org_form_inline'
+  const dropOrgFieldsForPostCreate = isPostCreateVariant(onboardingSurveyVariant)
 
   useEffect(() => {
-    if (showOnboardingSurveyMinimal) return
+    if (!showOnboardingSurveyInOrgForm) return
     if (hasTrackedSurveyShown.current) return
 
     hasTrackedSurveyShown.current = true
     track('onboarding_survey_prompt_shown', {
       surface: 'org_form',
     })
-  }, [showOnboardingSurveyMinimal, track])
+  }, [showOnboardingSurveyInOrgForm, track])
 
   useEffect(() => {
     form.reset({
@@ -298,13 +300,15 @@ export const NewOrgForm = ({
 
   const submitOrganizationSurvey = useCallback(
     async (slug: string) => {
-      if (showOnboardingSurveyMinimal) return
+      if (!showOnboardingSurveyInOrgForm) return
 
       const heardFrom = formatHeardFromAnswer(
         form.getValues('heard_from'),
         form.getValues('heard_from_detail')
       )
       const building = form.getValues('building')?.trim()
+      const kind = form.getValues('kind')
+      const size = kind === 'COMPANY' ? form.getValues('size') : undefined
       const hasHeardFrom = !!heardFrom
       const hasBuilding = !!building
 
@@ -320,6 +324,8 @@ export const NewOrgForm = ({
       try {
         await submitOnboardingSurvey({
           slug,
+          kind,
+          size,
           heard_from: heardFrom,
           building,
         })
@@ -336,10 +342,9 @@ export const NewOrgForm = ({
           hasHeardFrom,
           hasBuilding,
         })
-        // This prototype survey should never block organization creation.
       }
     },
-    [form, showOnboardingSurveyMinimal, submitOnboardingSurvey, track]
+    [form, showOnboardingSurveyInOrgForm, submitOnboardingSurvey, track]
   )
 
   const { mutate: confirmPendingSubscriptionChange } = useConfirmPendingSubscriptionCreateMutation({
@@ -538,7 +543,9 @@ export const NewOrgForm = ({
                 onValueChange={(value) => {
                   field.onChange(value)
                   if (!HEARD_FROM_FOLLOW_UP_BY_VALUE[value]) {
-                    form.setValue('heard_from_detail', '', { shouldDirty: true })
+                    form.setValue('heard_from_detail', '', {
+                      shouldDirty: true,
+                    })
                   }
                 }}
               >
@@ -722,8 +729,8 @@ export const NewOrgForm = ({
               </Panel.Content>
             )}
 
-            {!showOnboardingSurveyMinimal &&
-              (showOnboardingSurveyInline ? (
+            {showOnboardingSurveyInOrgForm ? (
+              showOnboardingSurveyInline ? (
                 <>
                   <Panel.Content>{orgKindField}</Panel.Content>
                   {orgSizeField && <Panel.Content>{orgSizeField}</Panel.Content>}
@@ -737,7 +744,13 @@ export const NewOrgForm = ({
                 >
                   {onboardingSurveyFields}
                 </ProjectCreationCollapsibleSection>
-              ))}
+              )
+            ) : !dropOrgFieldsForPostCreate ? (
+              <>
+                <Panel.Content>{orgKindField}</Panel.Content>
+                {orgSizeField && <Panel.Content>{orgSizeField}</Panel.Content>}
+              </>
+            ) : null}
 
             {form.watch('plan') === 'PRO' && (
               <>

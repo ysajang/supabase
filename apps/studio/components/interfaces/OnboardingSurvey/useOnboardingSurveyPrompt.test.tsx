@@ -1,29 +1,38 @@
-import { act, renderHook } from '@testing-library/react'
+import { act, renderHook, waitFor } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
+import type { OnboardingSurveyVariant } from './OnboardingSurvey.constants'
 import { useOnboardingSurveyPrompt } from './useOnboardingSurveyPrompt'
-import { routerMock } from '@/tests/lib/route-mock'
 
-type PromptState = { status: 'submitted' | 'dismissed'; updatedAt: string } | null
+type PromptState = {
+  status: 'submitted' | 'dismissed'
+  updatedAt: string
+} | null
 type OrganizationState = { slug: string } | undefined
 type ProfileState = { gotrue_id?: string; id?: number } | undefined
 type ProjectState = { ref: string } | undefined
 
 const {
+  flagState,
   localStorageState,
   mockMutateAsync,
   mockSetLocalStorageState,
   mockTrack,
+  mockTrackExperimentExposure,
   organizationState,
   profileState,
   projectState,
 } = vi.hoisted(() => ({
+  flagState: {
+    current: 'org_form_collapsible' as OnboardingSurveyVariant | false | undefined,
+  },
   localStorageState: { current: null as PromptState },
   mockMutateAsync: vi.fn(),
   mockSetLocalStorageState: vi.fn((value: PromptState | ((state: PromptState) => PromptState)) => {
     localStorageState.current = value instanceof Function ? value(localStorageState.current) : value
   }),
   mockTrack: vi.fn(),
+  mockTrackExperimentExposure: vi.fn(),
   organizationState: { current: { slug: 'test-org' } as OrganizationState },
   profileState: { current: { gotrue_id: 'user-1', id: 1 } as ProfileState },
   projectState: { current: { ref: 'project-ref' } as ProjectState },
@@ -66,6 +75,15 @@ vi.mock('@/hooks/misc/useSelectedProject', () => ({
   useSelectedProjectQuery: () => ({ data: projectState.current }),
 }))
 
+vi.mock('@/hooks/misc/useTrackExperimentExposure', () => ({
+  useTrackExperimentExposure: (id: string, variant: string | undefined) =>
+    mockTrackExperimentExposure(id, variant),
+}))
+
+vi.mock('@/hooks/ui/useFlag', () => ({
+  usePHFlag: () => flagState.current,
+}))
+
 vi.mock('@/lib/profile', () => ({
   useProfile: () => ({ profile: profileState.current }),
 }))
@@ -76,59 +94,100 @@ vi.mock('@/lib/telemetry/track', () => ({
 
 describe('useOnboardingSurveyPrompt', () => {
   beforeEach(() => {
+    flagState.current = 'org_form_collapsible'
     localStorageState.current = null
     organizationState.current = { slug: 'test-org' }
     profileState.current = { gotrue_id: 'user-1', id: 1 }
     projectState.current = { ref: 'project-ref' }
     mockMutateAsync.mockResolvedValue(undefined)
-    routerMock.setCurrentUrl('/project/project-ref')
+    mockTrackExperimentExposure.mockReset()
   })
 
   afterEach(() => {
     vi.clearAllMocks()
   })
 
-  it('shows the prompt once a project, organization, and profile are available', () => {
-    const { result } = renderHook(() => useOnboardingSurveyPrompt({ surface: 'building_state' }))
+  it('does not show the prompt for the control variant on any surface', () => {
+    flagState.current = 'control'
+    const { result } = renderHook(() => useOnboardingSurveyPrompt({ surface: 'org_form' }))
+
+    expect(result.current.shouldShowPrompt).toBe(false)
+    expect(result.current.variant).toBe('control')
+  })
+
+  it('shows the prompt when the variant matches the surface', () => {
+    flagState.current = 'org_form_collapsible'
+    const { result } = renderHook(() => useOnboardingSurveyPrompt({ surface: 'org_form' }))
 
     expect(result.current.shouldShowPrompt).toBe(true)
     expect(mockTrack).toHaveBeenCalledWith('onboarding_survey_prompt_shown', {
-      surface: 'building_state',
+      surface: 'org_form',
       orgSlug: 'test-org',
       projectRef: 'project-ref',
     })
   })
 
-  it('does not show after the user has dismissed or submitted it', () => {
-    localStorageState.current = { status: 'dismissed', updatedAt: '2026-05-07T00:00:00.000Z' }
-
-    const { result } = renderHook(() => useOnboardingSurveyPrompt({ surface: 'project_home' }))
+  it('does not show the prompt when the variant does not match the surface', () => {
+    flagState.current = 'org_form_collapsible'
+    const { result } = renderHook(() => useOnboardingSurveyPrompt({ surface: 'building_state' }))
 
     expect(result.current.shouldShowPrompt).toBe(false)
   })
 
-  it.each(['building_state', 'building_state_inline'])(
-    'can be forced for prototype testing with %s',
-    (override) => {
-      localStorageState.current = { status: 'dismissed', updatedAt: '2026-05-07T00:00:00.000Z' }
-      routerMock.setCurrentUrl(`/project/project-ref?onboardingSurveyPrompt=${override}`)
-
-      const { result } = renderHook(() => useOnboardingSurveyPrompt({ surface: 'building_state' }))
-
-      expect(result.current.shouldShowPrompt).toBe(true)
-    }
-  )
-
-  it('can be forced for prototype testing on the project home surface', () => {
-    localStorageState.current = { status: 'dismissed', updatedAt: '2026-05-07T00:00:00.000Z' }
-    routerMock.setCurrentUrl('/project/project-ref?onboardingSurveyPrompt=project_home')
-
-    const { result } = renderHook(() => useOnboardingSurveyPrompt({ surface: 'project_home' }))
+  it('shows the prompt for building_state surface with building_state_inline variant', () => {
+    flagState.current = 'building_state_inline'
+    const { result } = renderHook(() => useOnboardingSurveyPrompt({ surface: 'building_state' }))
 
     expect(result.current.shouldShowPrompt).toBe(true)
   })
 
+  it('shows the prompt for project_home surface with toast and dialog variants', () => {
+    flagState.current = 'toast'
+    const toastResult = renderHook(() =>
+      useOnboardingSurveyPrompt({ surface: 'project_home' })
+    ).result
+    expect(toastResult.current.shouldShowPrompt).toBe(true)
+
+    flagState.current = 'dialog'
+    const dialogResult = renderHook(() =>
+      useOnboardingSurveyPrompt({ surface: 'project_home' })
+    ).result
+    expect(dialogResult.current.shouldShowPrompt).toBe(true)
+  })
+
+  it('fires experiment exposure with the variant on mount', async () => {
+    flagState.current = 'org_form_inline'
+    renderHook(() => useOnboardingSurveyPrompt({ surface: 'org_form' }))
+
+    await waitFor(() =>
+      expect(mockTrackExperimentExposure).toHaveBeenCalledWith(
+        'onboardingSurveyPlacement',
+        'org_form_inline'
+      )
+    )
+  })
+
+  it('does not fire experiment exposure when the flag is still loading', () => {
+    flagState.current = undefined
+    renderHook(() => useOnboardingSurveyPrompt({ surface: 'org_form' }))
+
+    expect(mockTrackExperimentExposure).toHaveBeenCalledWith('onboardingSurveyPlacement', undefined)
+  })
+
+  it('does not show after the user has dismissed or submitted', () => {
+    flagState.current = 'org_form_collapsible'
+    localStorageState.current = {
+      status: 'submitted',
+      updatedAt: '2026-05-07T00:00:00.000Z',
+    }
+
+    const { result } = renderHook(() => useOnboardingSurveyPrompt({ surface: 'org_form' }))
+
+    expect(result.current.shouldShowPrompt).toBe(false)
+  })
+
   it('tracks dialog opens and dismissals', () => {
+    flagState.current = 'toast'
     const { result } = renderHook(() => useOnboardingSurveyPrompt({ surface: 'project_home' }))
 
     act(() => result.current.openDialog())
@@ -151,15 +210,23 @@ describe('useOnboardingSurveyPrompt', () => {
     })
   })
 
-  it('submits the mock payload and records completion state', async () => {
+  it('submits the survey payload including kind and size and records completion', async () => {
+    flagState.current = 'building_state_inline'
     const { result } = renderHook(() => useOnboardingSurveyPrompt({ surface: 'building_state' }))
 
     await act(async () => {
-      await result.current.submitSurvey({ heard_from: 'ai_tool', building: 'SaaS app' })
+      await result.current.submitSurvey({
+        kind: 'COMPANY',
+        size: '10',
+        heard_from: 'ai_tool',
+        building: 'SaaS app',
+      })
     })
 
     expect(mockMutateAsync).toHaveBeenCalledWith({
       slug: 'test-org',
+      kind: 'COMPANY',
+      size: '10',
       heard_from: 'ai_tool',
       building: 'SaaS app',
     })

@@ -1,6 +1,5 @@
 import { ReactFlowProvider } from '@xyflow/react'
 import Link from 'next/link'
-import { useEffect, useState } from 'react'
 import { Badge, cn, Tooltip, TooltipContent, TooltipTrigger } from 'ui'
 
 import { InstanceConfiguration } from '../Settings/Infrastructure/InfrastructureConfiguration/InstanceConfiguration'
@@ -19,18 +18,19 @@ import { useIsOrioleDb, useSelectedProjectQuery } from '@/hooks/misc/useSelected
 import { DOCS_URL, PROJECT_STATUS } from '@/lib/constants'
 
 type TopSectionProps = {
-  mockBuildingSurveyVariant?: 'dialog' | 'embedded'
-  showMockBuildingSurveyOrgFields?: boolean
+  buildingSurveyVariant?: 'cta' | 'embedded'
+  showOnboardingSurveyOrgFields?: boolean
 }
 
 export const TopSection = ({
-  mockBuildingSurveyVariant,
-  showMockBuildingSurveyOrgFields = false,
+  buildingSurveyVariant,
+  showOnboardingSurveyOrgFields = false,
 }: TopSectionProps) => {
-  const [isMockBuildingSurveyHidden, setIsMockBuildingSurveyHidden] = useState(false)
   const isOrioleDb = useIsOrioleDb()
   const { data: project } = useSelectedProjectQuery()
-  const { data: parentProject } = useProjectDetailQuery({ ref: project?.parent_project_ref })
+  const { data: parentProject } = useProjectDetailQuery({
+    ref: project?.parent_project_ref,
+  })
 
   const { data: branches } = useBranchesQuery({
     projectRef: project?.parent_project_ref ?? project?.ref,
@@ -41,17 +41,12 @@ export const TopSection = ({
   const isMainBranch = currentBranch?.name === mainBranch?.name
 
   const isPaused = project?.status === PROJECT_STATUS.INACTIVE
-  const showMockBuildingSurvey = !!mockBuildingSurveyVariant && !isMockBuildingSurveyHidden
   const projectName =
     currentBranch && !isMainBranch
       ? currentBranch.name
       : project?.name
         ? project.name
         : 'Welcome to your project'
-
-  useEffect(() => {
-    setIsMockBuildingSurveyHidden(false)
-  }, [mockBuildingSurveyVariant])
 
   if (isPaused) {
     return <ProjectPausedState />
@@ -97,16 +92,15 @@ export const TopSection = ({
           </div>
         </div>
         <div>
-          {showMockBuildingSurvey && mockBuildingSurveyVariant === 'embedded' ? (
+          {buildingSurveyVariant === 'embedded' ? (
             <OnboardingSurveyEmbeddedPrompt
               className="flex min-h-[400px] flex-col md:min-h-[500px]"
-              showOrgFields={showMockBuildingSurveyOrgFields}
-              onClose={() => setIsMockBuildingSurveyHidden(true)}
+              showOrgFields={showOnboardingSurveyOrgFields}
             />
-          ) : showMockBuildingSurvey ? (
+          ) : buildingSurveyVariant === 'cta' ? (
             <OnboardingSurveyInlinePrompt
               className="flex min-h-[400px] flex-col justify-center md:min-h-[500px]"
-              showOrgFields={showMockBuildingSurveyOrgFields}
+              showOrgFields={showOnboardingSurveyOrgFields}
             />
           ) : (
             <div

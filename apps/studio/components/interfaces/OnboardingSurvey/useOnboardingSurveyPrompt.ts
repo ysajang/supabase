@@ -1,25 +1,28 @@
 import { LOCAL_STORAGE_KEYS } from 'common'
-import { useRouter } from 'next/router'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
 
 import type {
   OnboardingSurveyPromptState,
   OnboardingSurveySurface,
+  OnboardingSurveyVariant,
 } from './OnboardingSurvey.constants'
 import {
-  getOnboardingSurveyPromptOverride,
-  ONBOARDING_SURVEY_PROMPT_QUERY_PARAM,
-  shouldForceOnboardingSurveyPrompt,
+  ONBOARDING_SURVEY_EXPERIMENT_ID,
+  variantMatchesSurface,
 } from './OnboardingSurvey.constants'
 import { useOnboardingSurveyMutation } from '@/data/organizations/onboarding-survey-mutation'
 import { useLocalStorageQuery } from '@/hooks/misc/useLocalStorage'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { useTrackExperimentExposure } from '@/hooks/misc/useTrackExperimentExposure'
+import { usePHFlag } from '@/hooks/ui/useFlag'
 import { useProfile } from '@/lib/profile'
 import { useTrack } from '@/lib/telemetry/track'
 
 type SurveyValues = {
+  kind?: string
+  size?: string
   heard_from?: string
   building?: string
 }
@@ -28,7 +31,12 @@ type SubmitSurveyOptions = {
   showSuccessToast?: boolean
 }
 
-type DismissReason = 'skip_button' | 'dialog_dismissed' | 'toast_skip' | 'close_button'
+type DismissReason =
+  | 'skip_button'
+  | 'dialog_dismissed'
+  | 'toast_skip'
+  | 'org_form_blank'
+  | 'close_button'
 
 export const getOnboardingSurveyPromptStorageKey = ({
   orgSlug,
@@ -45,13 +53,18 @@ export const getOnboardingSurveyPromptStorageKey = ({
 }
 
 export function useOnboardingSurveyPrompt({ surface }: { surface: OnboardingSurveySurface }) {
-  const router = useRouter()
   const track = useTrack()
   const { profile } = useProfile()
   const { data: organization } = useSelectedOrganizationQuery()
   const { data: project } = useSelectedProjectQuery()
   const [open, setOpen] = useState(false)
   const hasTrackedShown = useRef(false)
+
+  const flagValue = usePHFlag<OnboardingSurveyVariant | false>(ONBOARDING_SURVEY_EXPERIMENT_ID)
+  const variant: OnboardingSurveyVariant | undefined =
+    typeof flagValue === 'string' ? flagValue : undefined
+
+  useTrackExperimentExposure(ONBOARDING_SURVEY_EXPERIMENT_ID, variant)
 
   const profileId = profile?.gotrue_id ?? profile?.id
   const orgSlug = organization?.slug
@@ -66,17 +79,14 @@ export function useOnboardingSurveyPrompt({ surface }: { surface: OnboardingSurv
     useLocalStorageQuery<OnboardingSurveyPromptState | null>(storageKey, null)
 
   const mutation = useOnboardingSurveyMutation()
-  const promptOverride = getOnboardingSurveyPromptOverride(
-    router.query[ONBOARDING_SURVEY_PROMPT_QUERY_PARAM]
-  )
-  const isForcedPrompt = shouldForceOnboardingSurveyPrompt({ override: promptOverride, surface })
 
   const shouldShowPrompt =
     isPromptStateLoaded &&
     !!orgSlug &&
     !!projectRef &&
     !!profileId &&
-    (promptState === null || isForcedPrompt)
+    promptState === null &&
+    variantMatchesSurface(variant, surface)
 
   useEffect(() => {
     if (!shouldShowPrompt || hasTrackedShown.current) return
@@ -107,7 +117,10 @@ export function useOnboardingSurveyPrompt({ surface }: { surface: OnboardingSurv
         return
       }
 
-      setPromptState({ status: 'dismissed', updatedAt: new Date().toISOString() })
+      setPromptState({
+        status: 'dismissed',
+        updatedAt: new Date().toISOString(),
+      })
       setOpen(false)
       track('onboarding_survey_skipped', {
         surface,
@@ -121,7 +134,7 @@ export function useOnboardingSurveyPrompt({ surface }: { surface: OnboardingSurv
 
   const submitSurvey = useCallback(
     async (
-      { heard_from, building }: SurveyValues,
+      { kind, size, heard_from, building }: SurveyValues,
       { showSuccessToast = true }: SubmitSurveyOptions = {}
     ) => {
       if (!orgSlug) return false
@@ -129,11 +142,16 @@ export function useOnboardingSurveyPrompt({ surface }: { surface: OnboardingSurv
       try {
         await mutation.mutateAsync({
           slug: orgSlug,
+          kind,
+          size,
           heard_from,
           building,
         })
 
-        setPromptState({ status: 'submitted', updatedAt: new Date().toISOString() })
+        setPromptState({
+          status: 'submitted',
+          updatedAt: new Date().toISOString(),
+        })
         setOpen(false)
         track('onboarding_survey_submitted', {
           surface,
@@ -167,5 +185,6 @@ export function useOnboardingSurveyPrompt({ surface }: { surface: OnboardingSurv
     setOpen,
     shouldShowPrompt,
     submitSurvey,
+    variant,
   }
 }

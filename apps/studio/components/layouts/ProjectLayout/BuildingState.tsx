@@ -8,7 +8,12 @@ import { ClientLibrary } from '@/components/interfaces/Home/ClientLibrary'
 import { ExampleProject } from '@/components/interfaces/Home/ExampleProject'
 import { EXAMPLE_PROJECTS } from '@/components/interfaces/Home/Home.constants'
 import { APIKeys } from '@/components/interfaces/Home/NewProjectPanel/APIKeys'
-import { OnboardingSurveyInlinePrompt } from '@/components/interfaces/OnboardingSurvey'
+import {
+  getBuildingSurveyStyle,
+  OnboardingSurveyEmbeddedPrompt,
+  OnboardingSurveyInlinePrompt,
+  useOnboardingSurveyPrompt,
+} from '@/components/interfaces/OnboardingSurvey'
 import { SupportLink } from '@/components/interfaces/Support/SupportLink'
 import { useInvalidateProjectsInfiniteQuery } from '@/data/projects/org-projects-infinite-query'
 import { useInvalidateProjectDetailsQuery } from '@/data/projects/project-detail-query'
@@ -21,6 +26,10 @@ import { DOCS_URL, PROJECT_STATUS } from '@/lib/constants'
 const BuildingState = () => {
   const { ref } = useParams()
   const { data: project } = useSelectedProjectQuery()
+  const { variant: onboardingSurveyVariant } = useOnboardingSurveyPrompt({
+    surface: 'building_state',
+  })
+  const buildingSurveyVariant = getBuildingSurveyStyle(onboardingSurveyVariant)
 
   const { invalidateProjectsQuery } = useInvalidateProjectsInfiniteQuery()
   const { invalidateProjectDetailsQuery } = useInvalidateProjectDetailsQuery()
@@ -107,9 +116,15 @@ const BuildingState = () => {
                     </p>
                   }
                 />
-                <div className="mt-6">
-                  <OnboardingSurveyInlinePrompt />
-                </div>
+                {buildingSurveyVariant === 'embedded' ? (
+                  <div className="mt-6">
+                    <OnboardingSurveyEmbeddedPrompt showOrgFields />
+                  </div>
+                ) : buildingSurveyVariant === 'cta' ? (
+                  <div className="mt-6">
+                    <OnboardingSurveyInlinePrompt showOrgFields />
+                  </div>
+                ) : null}
               </div>
               <div>
                 <h4 className="text-base text-foreground">Not working?</h4>

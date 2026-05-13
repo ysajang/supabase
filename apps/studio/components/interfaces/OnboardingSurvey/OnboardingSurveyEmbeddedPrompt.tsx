@@ -16,6 +16,7 @@ import {
 import {
   BUILDING_MAX_LENGTH,
   BUILDING_PLACEHOLDER,
+  buildOnboardingSurveyAnswers,
   formatHeardFromAnswer,
   HEARD_FROM_FOLLOW_UP_BY_VALUE,
   HEARD_FROM_OPTIONS,
@@ -58,13 +59,16 @@ export function OnboardingSurveyEmbeddedPrompt({
   if (!prompt.shouldShowPrompt && !isSubmitted) return null
 
   const submitSurvey = async () => {
-    const didSubmit = await prompt.submitSurvey(
-      {
-        heard_from: formatHeardFromAnswer(heardFrom, heardFromDetail),
-        building,
-      },
-      { showSuccessToast: false }
-    )
+    const payload = buildOnboardingSurveyAnswers({
+      heardFrom: formatHeardFromAnswer(heardFrom, heardFromDetail),
+      building,
+      showOrgFields,
+      orgKind,
+      orgSize,
+    })
+    const didSubmit = await prompt.submitSurvey(payload, {
+      showSuccessToast: false,
+    })
 
     if (!didSubmit) return
 

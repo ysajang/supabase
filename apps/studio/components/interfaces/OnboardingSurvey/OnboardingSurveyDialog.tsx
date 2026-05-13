@@ -21,12 +21,14 @@ import {
 import {
   BUILDING_MAX_LENGTH,
   BUILDING_PLACEHOLDER,
+  buildOnboardingSurveyAnswers,
   formatHeardFromAnswer,
   HEARD_FROM_FOLLOW_UP_BY_VALUE,
   HEARD_FROM_OPTIONS,
   ORG_KIND_TYPES,
   ORG_SIZE_DEFAULT,
   ORG_SIZE_TYPES,
+  type OnboardingSurveyAnswers,
 } from './OnboardingSurvey.constants'
 
 type OnboardingSurveyDialogProps = {
@@ -36,7 +38,7 @@ type OnboardingSurveyDialogProps = {
   onDismiss: () => void
   onOpenChange: (open: boolean) => void
   onSkip: () => void
-  onSubmit: (values: { heard_from?: string; building?: string }) => Promise<unknown> | unknown
+  onSubmit: (values: OnboardingSurveyAnswers) => Promise<unknown> | unknown
   showOrgFields?: boolean
   title?: string
 }
@@ -74,10 +76,15 @@ export function OnboardingSurveyDialog({
   }
 
   const handleSubmit = async () => {
-    await onSubmit({
-      heard_from: formatHeardFromAnswer(heardFrom, heardFromDetail),
-      building,
-    })
+    await onSubmit(
+      buildOnboardingSurveyAnswers({
+        heardFrom: formatHeardFromAnswer(heardFrom, heardFromDetail),
+        building,
+        showOrgFields,
+        orgKind,
+        orgSize,
+      })
+    )
   }
 
   return (
