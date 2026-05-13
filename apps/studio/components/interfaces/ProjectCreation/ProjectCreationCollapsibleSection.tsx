@@ -26,12 +26,17 @@ export const ProjectCreationCollapsibleSection = ({
           />
         </CollapsibleTrigger_Shadcn_>
         <CollapsibleContent_Shadcn_
+          forceMount
           className={cn(
-            'pt-2 data-closed:animate-collapsible-up data-open:animate-collapsible-down'
+            'grid overflow-hidden transition-[grid-template-rows,opacity] duration-200 ease-out',
+            'data-closed:grid-rows-[0fr] data-closed:opacity-0',
+            'data-open:grid-rows-[1fr] data-open:opacity-100'
           )}
         >
-          {description && <p className="text-xs text-foreground-lighter mb-6">{description}</p>}
-          {children}
+          <div className="min-h-0 overflow-hidden pt-2">
+            {description && <p className="text-xs text-foreground-lighter mb-6">{description}</p>}
+            {children}
+          </div>
         </CollapsibleContent_Shadcn_>
       </Collapsible_Shadcn_>
     </Panel.Content>
