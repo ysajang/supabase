@@ -176,14 +176,21 @@ export const NewOrgForm = ({
     },
   })
 
+  const onboardingSurveyPromptOverride = getOnboardingSurveyPromptOverride(
+    router.query[ONBOARDING_SURVEY_PROMPT_QUERY_PARAM]
+  )
+  const showOnboardingSurveyInline = onboardingSurveyPromptOverride === 'org_form_inline'
+  const showOnboardingSurveyMinimal = onboardingSurveyPromptOverride === 'org_form_minimal'
+
   useEffect(() => {
+    if (showOnboardingSurveyMinimal) return
     if (hasTrackedSurveyShown.current) return
 
     hasTrackedSurveyShown.current = true
     track('onboarding_survey_prompt_shown', {
       surface: 'org_form',
     })
-  }, [track])
+  }, [showOnboardingSurveyMinimal, track])
 
   useEffect(() => {
     form.reset({
@@ -232,10 +239,6 @@ export const NewOrgForm = ({
   const selectedOrgKind = form.watch('kind')
   const selectedHeardFrom = form.watch('heard_from')
   const selectedHeardFromDetail = form.watch('heard_from_detail')
-  const onboardingSurveyPromptOverride = getOnboardingSurveyPromptOverride(
-    router.query[ONBOARDING_SURVEY_PROMPT_QUERY_PARAM]
-  )
-  const showOnboardingSurveyInline = onboardingSurveyPromptOverride === 'org_form_inline'
   const heardFromFollowUp = selectedHeardFrom
     ? HEARD_FROM_FOLLOW_UP_BY_VALUE[selectedHeardFrom]
     : undefined
@@ -295,6 +298,8 @@ export const NewOrgForm = ({
 
   const submitOrganizationSurvey = useCallback(
     async (slug: string) => {
+      if (showOnboardingSurveyMinimal) return
+
       const heardFrom = formatHeardFromAnswer(
         form.getValues('heard_from'),
         form.getValues('heard_from_detail')
@@ -334,7 +339,7 @@ export const NewOrgForm = ({
         // This prototype survey should never block organization creation.
       }
     },
-    [form, submitOnboardingSurvey, track]
+    [form, showOnboardingSurveyMinimal, submitOnboardingSurvey, track]
   )
 
   const { mutate: confirmPendingSubscriptionChange } = useConfirmPendingSubscriptionCreateMutation({
@@ -717,21 +722,22 @@ export const NewOrgForm = ({
               </Panel.Content>
             )}
 
-            {showOnboardingSurveyInline ? (
-              <>
-                <Panel.Content>{orgKindField}</Panel.Content>
-                {orgSizeField && <Panel.Content>{orgSizeField}</Panel.Content>}
-                <Panel.Content>{heardFromField}</Panel.Content>
-                <Panel.Content>{buildingField}</Panel.Content>
-              </>
-            ) : (
-              <ProjectCreationCollapsibleSection
-                title="Help us tailor your setup"
-                description="Optional questions to help us improve your onboarding"
-              >
-                {onboardingSurveyFields}
-              </ProjectCreationCollapsibleSection>
-            )}
+            {!showOnboardingSurveyMinimal &&
+              (showOnboardingSurveyInline ? (
+                <>
+                  <Panel.Content>{orgKindField}</Panel.Content>
+                  {orgSizeField && <Panel.Content>{orgSizeField}</Panel.Content>}
+                  <Panel.Content>{heardFromField}</Panel.Content>
+                  <Panel.Content>{buildingField}</Panel.Content>
+                </>
+              ) : (
+                <ProjectCreationCollapsibleSection
+                  title="Help us tailor your setup"
+                  description="Optional questions to help us improve your onboarding"
+                >
+                  {onboardingSurveyFields}
+                </ProjectCreationCollapsibleSection>
+              ))}
 
             {form.watch('plan') === 'PRO' && (
               <>
