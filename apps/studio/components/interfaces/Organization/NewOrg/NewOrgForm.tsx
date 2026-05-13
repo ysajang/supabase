@@ -634,17 +634,16 @@ export const NewOrgForm = ({
               </Panel.Content>
             )}
 
-            <ProjectCreationCollapsibleSection title="Help us tailor your setup">
+            <ProjectCreationCollapsibleSection
+              title="Help us tailor your setup"
+              description="Optional questions to help us improve your onboarding"
+            >
               <div className="flex flex-col gap-y-5">
                 <FormField
                   control={form.control}
                   name="heard_from"
                   render={({ field }) => (
-                    <FormItemLayout
-                      label="Where did you hear about us?"
-                      layout="horizontal"
-                      description="Optional questions to help us improve your onboarding."
-                    >
+                    <FormItemLayout label="Where did you hear about us?" layout="horizontal">
                       <FormControl>
                         <div className="flex flex-col gap-y-2">
                           <Select_Shadcn_
