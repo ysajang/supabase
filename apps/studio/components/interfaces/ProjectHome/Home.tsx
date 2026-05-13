@@ -2,7 +2,7 @@ import { DndContext, DragEndEvent, PointerSensor, useSensor, useSensors } from '
 import { arrayMove, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { IS_PLATFORM, useFlag, useParams } from 'common'
 import dayjs from 'dayjs'
-import { useEffect, useRef } from 'react'
+import { Fragment, useEffect, useRef } from 'react'
 import { cn } from 'ui'
 
 import { AdvisorSection } from './AdvisorSection'
@@ -94,14 +94,8 @@ export const ProjectHome = () => {
         </ScaffoldContainer>
         {!isPaused && (
           <ScaffoldContainer size="large">
-            <ScaffoldSection isFullWidth className="pt-6 pb-0">
-              <PlanUsageCard />
-            </ScaffoldSection>
-          </ScaffoldContainer>
-        )}
-        {!isPaused && (
-          <ScaffoldContainer size="large">
             <ScaffoldSection isFullWidth className="gap-12 pb-32">
+              {!showConnectSection && <PlanUsageCard />}
               <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
                 <SortableContext items={renderOrder} strategy={verticalListSortingStrategy}>
                   {renderOrder.map((id) => {
@@ -119,9 +113,12 @@ export const ProjectHome = () => {
                     }
                     if (id === 'connect' && showConnectSection) {
                       return (
-                        <SortableSection key={id} id={id}>
-                          <ConnectSection />
-                        </SortableSection>
+                        <Fragment key={id}>
+                          <SortableSection id={id}>
+                            <ConnectSection />
+                          </SortableSection>
+                          <PlanUsageCard />
+                        </Fragment>
                       )
                     }
                     if (id === 'advisor') {
