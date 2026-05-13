@@ -5,7 +5,7 @@ import { loadStripe } from '@stripe/stripe-js'
 import { useDebounce } from '@uidotdev/usehooks'
 import { LOCAL_STORAGE_KEYS } from 'common'
 import { groupBy } from 'lodash'
-import { ChevronRight, HelpCircle } from 'lucide-react'
+import { HelpCircle } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { useRouter } from 'next/router'
 import { parseAsBoolean, parseAsString, useQueryStates } from 'nuqs'
@@ -14,10 +14,6 @@ import { SubmitHandler, useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import {
   Button,
-  cn,
-  Collapsible_Shadcn_,
-  CollapsibleContent_Shadcn_,
-  CollapsibleTrigger_Shadcn_,
   Form,
   FormControl,
   FormField,
@@ -50,6 +46,7 @@ import {
   HEARD_FROM_FOLLOW_UP_BY_VALUE,
   HEARD_FROM_OPTIONS,
 } from '@/components/interfaces/OnboardingSurvey'
+import { ProjectCreationCollapsibleSection } from '@/components/interfaces/ProjectCreation/ProjectCreationCollapsibleSection'
 import { InlineLink } from '@/components/ui/InlineLink'
 import Panel from '@/components/ui/Panel'
 import { useOnboardingSurveyMutation } from '@/data/organizations/onboarding-survey-mutation'
@@ -637,101 +634,83 @@ export const NewOrgForm = ({
               </Panel.Content>
             )}
 
-            <Panel.Content className="!p-0">
-              <Collapsible_Shadcn_>
-                <CollapsibleTrigger_Shadcn_ className="group/onboarding-trigger flex w-full items-center justify-between px-card py-4 text-left bg-surface-200/20 transition hover:bg-surface-200 data-open:bg-surface-200">
-                  <span className="font-mono uppercase tracking-widest text-xs text-foreground-lighter/75 transition group-hover/onboarding-trigger:text-foreground-light group-data-open/onboarding-trigger:text-foreground-light">
-                    Help us tailor your setup
-                  </span>
-                  <ChevronRight
-                    size={16}
-                    strokeWidth={1}
-                    className="text-foreground-lighter transition group-data-open/onboarding-trigger:rotate-90 group-hover/onboarding-trigger:text-foreground-light"
-                  />
-                </CollapsibleTrigger_Shadcn_>
-                <CollapsibleContent_Shadcn_
-                  className={cn(
-                    'overflow-hidden data-closed:animate-collapsible-up data-open:animate-collapsible-down'
+            <ProjectCreationCollapsibleSection title="Help us tailor your setup">
+              <div className="flex flex-col gap-y-5">
+                <FormField
+                  control={form.control}
+                  name="heard_from"
+                  render={({ field }) => (
+                    <FormItemLayout
+                      label="Where did you hear about us?"
+                      layout="horizontal"
+                      description="Optional questions to help us improve your onboarding."
+                    >
+                      <FormControl>
+                        <div className="flex flex-col gap-y-2">
+                          <Select_Shadcn_
+                            value={field.value}
+                            onValueChange={(value) => {
+                              field.onChange(value)
+                              if (!HEARD_FROM_FOLLOW_UP_BY_VALUE[value]) {
+                                form.setValue('heard_from_detail', '', { shouldDirty: true })
+                              }
+                            }}
+                          >
+                            <SelectTrigger_Shadcn_ className="w-full">
+                              <SelectValue_Shadcn_ placeholder="Select an option" />
+                            </SelectTrigger_Shadcn_>
+
+                            <SelectContent_Shadcn_>
+                              {HEARD_FROM_OPTIONS.map((option) => (
+                                <SelectItem_Shadcn_ key={option.value} value={option.value}>
+                                  {option.label}
+                                </SelectItem_Shadcn_>
+                              ))}
+                            </SelectContent_Shadcn_>
+                          </Select_Shadcn_>
+
+                          {heardFromFollowUp && (
+                            <Input_Shadcn_
+                              aria-label={heardFromFollowUp.label}
+                              value={selectedHeardFromDetail ?? ''}
+                              placeholder={heardFromFollowUp.placeholder}
+                              onChange={(event) =>
+                                form.setValue('heard_from_detail', event.target.value, {
+                                  shouldDirty: true,
+                                })
+                              }
+                            />
+                          )}
+                        </div>
+                      </FormControl>
+                    </FormItemLayout>
                   )}
-                >
-                  <div className="flex flex-col gap-y-5 border-t border-default px-card py-5">
-                    <FormField
-                      control={form.control}
-                      name="heard_from"
-                      render={({ field }) => (
-                        <FormItemLayout
-                          label="Where did you hear about us?"
-                          layout="horizontal"
-                          description="Optional questions to help us improve your onboarding."
-                        >
-                          <FormControl>
-                            <div className="flex flex-col gap-y-2">
-                              <Select_Shadcn_
-                                value={field.value}
-                                onValueChange={(value) => {
-                                  field.onChange(value)
-                                  if (!HEARD_FROM_FOLLOW_UP_BY_VALUE[value]) {
-                                    form.setValue('heard_from_detail', '', { shouldDirty: true })
-                                  }
-                                }}
-                              >
-                                <SelectTrigger_Shadcn_ className="w-full">
-                                  <SelectValue_Shadcn_ placeholder="Select an option" />
-                                </SelectTrigger_Shadcn_>
-
-                                <SelectContent_Shadcn_>
-                                  {HEARD_FROM_OPTIONS.map((option) => (
-                                    <SelectItem_Shadcn_ key={option.value} value={option.value}>
-                                      {option.label}
-                                    </SelectItem_Shadcn_>
-                                  ))}
-                                </SelectContent_Shadcn_>
-                              </Select_Shadcn_>
-
-                              {heardFromFollowUp && (
-                                <Input_Shadcn_
-                                  aria-label={heardFromFollowUp.label}
-                                  value={selectedHeardFromDetail ?? ''}
-                                  placeholder={heardFromFollowUp.placeholder}
-                                  onChange={(event) =>
-                                    form.setValue('heard_from_detail', event.target.value, {
-                                      shouldDirty: true,
-                                    })
-                                  }
-                                />
-                              )}
-                            </div>
-                          </FormControl>
-                        </FormItemLayout>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="building"
-                      render={({ field }) => (
-                        <FormItemLayout label="What are you building?" layout="horizontal">
-                          <FormControl>
-                            <div className="flex flex-col gap-y-1">
-                              <Textarea
-                                {...field}
-                                value={field.value ?? ''}
-                                rows={3}
-                                maxLength={BUILDING_MAX_LENGTH}
-                                placeholder={BUILDING_PLACEHOLDER}
-                                className="resize-none"
-                              />
-                              <span className="self-end text-xs text-foreground-lighter">
-                                {(field.value ?? '').length}/{BUILDING_MAX_LENGTH}
-                              </span>
-                            </div>
-                          </FormControl>
-                        </FormItemLayout>
-                      )}
-                    />
-                  </div>
-                </CollapsibleContent_Shadcn_>
-              </Collapsible_Shadcn_>
-            </Panel.Content>
+                />
+                <FormField
+                  control={form.control}
+                  name="building"
+                  render={({ field }) => (
+                    <FormItemLayout label="What are you building?" layout="horizontal">
+                      <FormControl>
+                        <div className="flex flex-col gap-y-1">
+                          <Textarea
+                            {...field}
+                            value={field.value ?? ''}
+                            rows={3}
+                            maxLength={BUILDING_MAX_LENGTH}
+                            placeholder={BUILDING_PLACEHOLDER}
+                            className="resize-none"
+                          />
+                          <span className="self-end text-xs text-foreground-lighter">
+                            {(field.value ?? '').length}/{BUILDING_MAX_LENGTH}
+                          </span>
+                        </div>
+                      </FormControl>
+                    </FormItemLayout>
+                  )}
+                />
+              </div>
+            </ProjectCreationCollapsibleSection>
 
             {form.watch('plan') === 'PRO' && (
               <>
