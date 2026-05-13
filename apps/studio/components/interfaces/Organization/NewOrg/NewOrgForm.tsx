@@ -451,6 +451,11 @@ export const NewOrgForm = ({
     return onPaymentMethodReset()
   }
 
+  const buildingDescription = showOnboardingSurveyInline ? undefined : 'What are you building?'
+  const buildingPlaceholder = showOnboardingSurveyInline
+    ? `What are you building? ${BUILDING_PLACEHOLDER.replace(/^e\.g\./, 'E.g.')}`
+    : BUILDING_PLACEHOLDER
+
   const onboardingSurveyFields = (
     <div className="flex flex-col gap-y-5">
       <FormField
@@ -565,7 +570,7 @@ export const NewOrgForm = ({
         control={form.control}
         name="building"
         render={({ field }) => (
-          <FormItemLayout label="Project" layout="horizontal" description="What are you building?">
+          <FormItemLayout label="Project" layout="horizontal" description={buildingDescription}>
             <FormControl>
               <div className="flex flex-col gap-y-1">
                 <Textarea
@@ -573,7 +578,7 @@ export const NewOrgForm = ({
                   value={field.value ?? ''}
                   rows={3}
                   maxLength={BUILDING_MAX_LENGTH}
-                  placeholder={BUILDING_PLACEHOLDER}
+                  placeholder={buildingPlaceholder}
                   className="resize-none"
                 />
                 <span className="self-end text-xs text-foreground-lighter">
