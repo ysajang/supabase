@@ -33,9 +33,13 @@ export const ProjectCreationCollapsibleSection = ({
             'data-open:grid-rows-[1fr] data-open:opacity-100'
           )}
         >
-          <div className="min-h-0 overflow-hidden pt-2">
-            {description && <p className="text-xs text-foreground-lighter mb-6">{description}</p>}
-            {children}
+          <div className="min-h-0 overflow-hidden">
+            <div className="pt-2">
+              {description && (
+                <p className="text-xs text-foreground-lighter mb-6">{description}</p>
+              )}
+              {children}
+            </div>
           </div>
         </CollapsibleContent_Shadcn_>
       </Collapsible_Shadcn_>
