@@ -129,16 +129,9 @@ describe('useOnboardingSurveyPrompt', () => {
 
   it('does not show the prompt when the variant does not match the surface', () => {
     flagState.current = 'org_form_collapsible'
-    const { result } = renderHook(() => useOnboardingSurveyPrompt({ surface: 'building_state' }))
+    const { result } = renderHook(() => useOnboardingSurveyPrompt({ surface: 'project_home' }))
 
     expect(result.current.shouldShowPrompt).toBe(false)
-  })
-
-  it('shows the prompt for building_state surface with building_state_inline variant', () => {
-    flagState.current = 'building_state_inline'
-    const { result } = renderHook(() => useOnboardingSurveyPrompt({ surface: 'building_state' }))
-
-    expect(result.current.shouldShowPrompt).toBe(true)
   })
 
   it('shows the prompt for project_home surface with toast and dialog variants', () => {
@@ -211,8 +204,8 @@ describe('useOnboardingSurveyPrompt', () => {
   })
 
   it('submits the survey payload including kind and size and records completion', async () => {
-    flagState.current = 'building_state_inline'
-    const { result } = renderHook(() => useOnboardingSurveyPrompt({ surface: 'building_state' }))
+    flagState.current = 'dialog'
+    const { result } = renderHook(() => useOnboardingSurveyPrompt({ surface: 'project_home' }))
 
     await act(async () => {
       await result.current.submitSurvey({
@@ -234,7 +227,7 @@ describe('useOnboardingSurveyPrompt', () => {
       expect.objectContaining({ status: 'submitted' })
     )
     expect(mockTrack).toHaveBeenCalledWith('onboarding_survey_submitted', {
-      surface: 'building_state',
+      surface: 'project_home',
       orgSlug: 'test-org',
       projectRef: 'project-ref',
       hasHeardFrom: true,

@@ -3,10 +3,6 @@ import Link from 'next/link'
 import { Badge, cn, Tooltip, TooltipContent, TooltipTrigger } from 'ui'
 
 import { InstanceConfiguration } from '../Settings/Infrastructure/InfrastructureConfiguration/InstanceConfiguration'
-import {
-  OnboardingSurveyEmbeddedPrompt,
-  OnboardingSurveyInlinePrompt,
-} from '@/components/interfaces/OnboardingSurvey'
 import { ActivityStats } from '@/components/interfaces/ProjectHome/ActivityStats'
 import { ProjectConnectionPopover } from '@/components/interfaces/ProjectHome/ProjectConnectionPopover'
 import { ProjectPausedState } from '@/components/layouts/ProjectLayout/PausedState/ProjectPausedState'
@@ -17,15 +13,7 @@ import { useProjectDetailQuery } from '@/data/projects/project-detail-query'
 import { useIsOrioleDb, useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { DOCS_URL, PROJECT_STATUS } from '@/lib/constants'
 
-type TopSectionProps = {
-  buildingSurveyVariant?: 'cta' | 'embedded'
-  showOnboardingSurveyOrgFields?: boolean
-}
-
-export const TopSection = ({
-  buildingSurveyVariant,
-  showOnboardingSurveyOrgFields = false,
-}: TopSectionProps) => {
+export const TopSection = () => {
   const isOrioleDb = useIsOrioleDb()
   const { data: project } = useSelectedProjectQuery()
   const { data: parentProject } = useProjectDetailQuery({
@@ -92,27 +80,15 @@ export const TopSection = ({
           </div>
         </div>
         <div>
-          {buildingSurveyVariant === 'embedded' ? (
-            <OnboardingSurveyEmbeddedPrompt
-              className="flex min-h-[400px] flex-col md:min-h-[500px]"
-              showOrgFields={showOnboardingSurveyOrgFields}
-            />
-          ) : buildingSurveyVariant === 'cta' ? (
-            <OnboardingSurveyInlinePrompt
-              className="flex min-h-[400px] flex-col justify-center md:min-h-[500px]"
-              showOrgFields={showOnboardingSurveyOrgFields}
-            />
-          ) : (
-            <div
-              className={cn(
-                'w-full h-[400px] md:h-[500px] border border-muted rounded-md overflow-hidden flex flex-col relative'
-              )}
-            >
-              <ReactFlowProvider>
-                <InstanceConfiguration diagramOnly />
-              </ReactFlowProvider>
-            </div>
-          )}
+          <div
+            className={cn(
+              'w-full h-[400px] md:h-[500px] border border-muted rounded-md overflow-hidden flex flex-col relative'
+            )}
+          >
+            <ReactFlowProvider>
+              <InstanceConfiguration diagramOnly />
+            </ReactFlowProvider>
+          </div>
         </div>
       </div>
       <ProjectUpgradeFailedBanner />

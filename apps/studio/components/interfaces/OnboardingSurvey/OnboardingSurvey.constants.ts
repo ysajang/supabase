@@ -91,24 +91,17 @@ export const ONBOARDING_SURVEY_VARIANTS = [
   'control',
   'org_form_collapsible',
   'org_form_inline',
-  'building_state_cta',
-  'building_state_inline',
   'dialog',
   'toast',
 ] as const
 
 export type OnboardingSurveyVariant = (typeof ONBOARDING_SURVEY_VARIANTS)[number]
 
-export type OnboardingSurveySurface = 'org_form' | 'building_state' | 'project_home'
+export type OnboardingSurveySurface = 'org_form' | 'project_home'
 
 const ORG_FORM_VARIANTS: ReadonlySet<OnboardingSurveyVariant> = new Set([
   'org_form_collapsible',
   'org_form_inline',
-])
-
-const BUILDING_STATE_VARIANTS: ReadonlySet<OnboardingSurveyVariant> = new Set([
-  'building_state_cta',
-  'building_state_inline',
 ])
 
 const PROJECT_HOME_VARIANTS: ReadonlySet<OnboardingSurveyVariant> = new Set(['dialog', 'toast'])
@@ -124,7 +117,7 @@ export function isOrgFormVariant(variant?: OnboardingSurveyVariant) {
 }
 
 export function isPostCreateVariant(variant?: OnboardingSurveyVariant) {
-  return !!variant && (BUILDING_STATE_VARIANTS.has(variant) || PROJECT_HOME_VARIANTS.has(variant))
+  return !!variant && PROJECT_HOME_VARIANTS.has(variant)
 }
 
 export function variantMatchesSurface(
@@ -133,19 +126,8 @@ export function variantMatchesSurface(
 ) {
   if (!variant) return false
   if (surface === 'org_form') return ORG_FORM_VARIANTS.has(variant)
-  if (surface === 'building_state') return BUILDING_STATE_VARIANTS.has(variant)
   if (surface === 'project_home') return PROJECT_HOME_VARIANTS.has(variant)
   return false
-}
-
-export type BuildingSurveyStyle = 'cta' | 'embedded'
-
-export function getBuildingSurveyStyle(
-  variant: OnboardingSurveyVariant | undefined
-): BuildingSurveyStyle | undefined {
-  if (variant === 'building_state_inline') return 'embedded'
-  if (variant === 'building_state_cta') return 'cta'
-  return undefined
 }
 
 export type OnboardingSurveyAnswers = {

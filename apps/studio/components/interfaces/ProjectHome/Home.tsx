@@ -12,7 +12,6 @@ import { DEFAULT_SECTION_ORDER, mergeSectionOrder } from './Home.utils'
 import { ProjectUsageSection as ProjectUsageSectionV2 } from './ProjectUsageSection'
 import { ProjectUsageSection as ProjectUsageSectionV1 } from '@/components/interfaces/Home/ProjectUsageSection'
 import {
-  getBuildingSurveyStyle,
   OnboardingSurveyToastPrompt,
   useOnboardingSurveyPrompt,
 } from '@/components/interfaces/OnboardingSurvey'
@@ -52,9 +51,6 @@ export const ProjectHome = () => {
     inProvisioningWindow &&
     (onboardingSurveyVariant === 'toast' || onboardingSurveyVariant === 'dialog')
   const shouldAutoOpenOnboardingSurveyDialog = isComingUp && onboardingSurveyVariant === 'dialog'
-  const buildingSurveyVariant = inProvisioningWindow
-    ? getBuildingSurveyStyle(onboardingSurveyVariant)
-    : undefined
 
   const [sectionOrder, setSectionOrder] = useLocalStorage<string[]>(
     `home-section-order-${project?.ref || 'default'}`,
@@ -115,10 +111,7 @@ export const ProjectHome = () => {
             isFullWidth
             className={cn(isPaused ? 'h-full flex justify-center p-0!' : 'pb-0')}
           >
-            <TopSection
-              buildingSurveyVariant={buildingSurveyVariant}
-              showOnboardingSurveyOrgFields
-            />
+            <TopSection />
           </ScaffoldSection>
         </ScaffoldContainer>
         {!isPaused && (
