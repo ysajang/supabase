@@ -116,10 +116,6 @@ export function isOrgFormVariant(variant?: OnboardingSurveyVariant) {
   return !!variant && ORG_FORM_VARIANTS.has(variant)
 }
 
-export function isPostCreateVariant(variant?: OnboardingSurveyVariant) {
-  return !!variant && PROJECT_HOME_VARIANTS.has(variant)
-}
-
 export function variantMatchesSurface(
   variant: OnboardingSurveyVariant | undefined,
   surface: OnboardingSurveySurface

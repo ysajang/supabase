@@ -46,7 +46,6 @@ import {
   HEARD_FROM_FOLLOW_UP_BY_VALUE,
   HEARD_FROM_OPTIONS,
   isOrgFormVariant,
-  isPostCreateVariant,
   ORG_KIND_DEFAULT,
   ORG_KIND_TYPES,
   ORG_SIZE_DEFAULT,
@@ -182,7 +181,6 @@ export const NewOrgForm = ({
   })
   const showOnboardingSurveyInOrgForm = isOrgFormVariant(onboardingSurveyVariant)
   const showOnboardingSurveyInline = onboardingSurveyVariant === 'org_form_inline'
-  const dropOrgFieldsForPostCreate = isPostCreateVariant(onboardingSurveyVariant)
 
   useEffect(() => {
     if (!showOnboardingSurveyInOrgForm) return
@@ -746,12 +744,12 @@ export const NewOrgForm = ({
                   {onboardingSurveyFields}
                 </ProjectCreationCollapsibleSection>
               )
-            ) : !dropOrgFieldsForPostCreate ? (
+            ) : (
               <>
                 <Panel.Content>{orgKindField}</Panel.Content>
                 {orgSizeField && <Panel.Content>{orgSizeField}</Panel.Content>}
               </>
-            ) : null}
+            )}
 
             {form.watch('plan') === 'PRO' && (
               <>
