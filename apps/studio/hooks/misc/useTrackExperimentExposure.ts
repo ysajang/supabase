@@ -1,12 +1,11 @@
 import { hasConsented, posthogClient } from 'common'
+import { EXPERIMENTS, type ExperimentKey } from 'common/telemetry-constants'
 import { useEffect } from 'react'
-
-import { EXPERIMENTS, type ExperimentKey } from '@/lib/telemetry/experiments'
 
 /**
  * Captures a PostHog experiment exposure. Looks up the exposure event name
  * from the EXPERIMENTS registry and emits `${exposureName}_experiment_exposed`.
- * Register new experiments in `apps/studio/lib/telemetry/experiments.ts`
+ * Register new experiments in `packages/common/telemetry-constants.ts`
  * before calling this hook.
  */
 export function useTrackExperimentExposure(
