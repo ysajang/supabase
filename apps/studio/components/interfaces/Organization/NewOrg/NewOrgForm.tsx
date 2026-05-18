@@ -17,12 +17,12 @@ import {
   Form,
   FormControl,
   FormField,
-  Input_Shadcn_,
-  Select_Shadcn_,
-  SelectContent_Shadcn_,
-  SelectItem_Shadcn_,
-  SelectTrigger_Shadcn_,
-  SelectValue_Shadcn_,
+  Input,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
   Switch,
   Textarea,
 } from 'ui'
@@ -477,19 +477,19 @@ export const NewOrgForm = ({
           description="What best describes your organization?"
         >
           <FormControl>
-            <Select_Shadcn_ value={field.value} onValueChange={field.onChange}>
-              <SelectTrigger_Shadcn_ className="w-full">
-                <SelectValue_Shadcn_ />
-              </SelectTrigger_Shadcn_>
+            <Select value={field.value} onValueChange={field.onChange}>
+              <SelectTrigger className="w-full">
+                <SelectValue />
+              </SelectTrigger>
 
-              <SelectContent_Shadcn_>
+              <SelectContent>
                 {Object.entries(ORG_KIND_TYPES).map(([k, v]) => (
-                  <SelectItem_Shadcn_ key={k} value={k}>
+                  <SelectItem key={k} value={k}>
                     {v}
-                  </SelectItem_Shadcn_>
+                  </SelectItem>
                 ))}
-              </SelectContent_Shadcn_>
-            </Select_Shadcn_>
+              </SelectContent>
+            </Select>
           </FormControl>
         </FormItemLayout>
       )}
@@ -507,19 +507,19 @@ export const NewOrgForm = ({
           description="How many people are in your company?"
         >
           <FormControl>
-            <Select_Shadcn_ value={field.value} onValueChange={field.onChange}>
-              <SelectTrigger_Shadcn_ className="w-full">
-                <SelectValue_Shadcn_ />
-              </SelectTrigger_Shadcn_>
+            <Select value={field.value} onValueChange={field.onChange}>
+              <SelectTrigger className="w-full">
+                <SelectValue />
+              </SelectTrigger>
 
-              <SelectContent_Shadcn_>
+              <SelectContent>
                 {Object.entries(ORG_SIZE_TYPES).map(([k, v]) => (
-                  <SelectItem_Shadcn_ key={k} value={k}>
+                  <SelectItem key={k} value={k}>
                     {v}
-                  </SelectItem_Shadcn_>
+                  </SelectItem>
                 ))}
-              </SelectContent_Shadcn_>
-            </Select_Shadcn_>
+              </SelectContent>
+            </Select>
           </FormControl>
         </FormItemLayout>
       )}
@@ -538,7 +538,7 @@ export const NewOrgForm = ({
         >
           <FormControl>
             <div className="flex flex-col gap-y-2">
-              <Select_Shadcn_
+              <Select
                 value={field.value}
                 onValueChange={(value) => {
                   field.onChange(value)
@@ -549,21 +549,21 @@ export const NewOrgForm = ({
                   }
                 }}
               >
-                <SelectTrigger_Shadcn_ className="w-full">
-                  <SelectValue_Shadcn_ placeholder="Select an option" />
-                </SelectTrigger_Shadcn_>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select an option" />
+                </SelectTrigger>
 
-                <SelectContent_Shadcn_>
+                <SelectContent>
                   {HEARD_FROM_OPTIONS.map((option) => (
-                    <SelectItem_Shadcn_ key={option.value} value={option.value}>
+                    <SelectItem key={option.value} value={option.value}>
                       {option.label}
-                    </SelectItem_Shadcn_>
+                    </SelectItem>
                   ))}
-                </SelectContent_Shadcn_>
-              </Select_Shadcn_>
+                </SelectContent>
+              </Select>
 
               {heardFromFollowUp && (
-                <Input_Shadcn_
+                <Input
                   aria-label={heardFromFollowUp.label}
                   value={selectedHeardFromDetail ?? ''}
                   placeholder={heardFromFollowUp.placeholder}
@@ -671,7 +671,7 @@ export const NewOrgForm = ({
                     description="What's the name of your company or team? You can change this later."
                   >
                     <FormControl>
-                      <Input_Shadcn_
+                      <Input
                         autoFocus
                         type="text"
                         placeholder="Organization name"
@@ -686,6 +686,7 @@ export const NewOrgForm = ({
                 )}
               />
             </Panel.Content>
+
             {isBillingEnabled && (
               <Panel.Content>
                 <FormField
@@ -703,25 +704,25 @@ export const NewOrgForm = ({
                       }
                     >
                       <FormControl>
-                        <Select_Shadcn_
+                        <Select
                           value={field.value}
                           onValueChange={(value) => {
                             field.onChange(value)
                             onPlanSelected(value)
                           }}
                         >
-                          <SelectTrigger_Shadcn_ className="w-full">
-                            <SelectValue_Shadcn_ />
-                          </SelectTrigger_Shadcn_>
+                          <SelectTrigger className="w-full">
+                            <SelectValue />
+                          </SelectTrigger>
 
-                          <SelectContent_Shadcn_>
+                          <SelectContent>
                             {Object.entries(PRICING_TIER_LABELS_ORG).map(([k, v]) => (
-                              <SelectItem_Shadcn_ key={k} value={k} translate="no">
+                              <SelectItem key={k} value={k} translate="no">
                                 {v}
-                              </SelectItem_Shadcn_>
+                              </SelectItem>
                             ))}
-                          </SelectContent_Shadcn_>
-                        </Select_Shadcn_>
+                          </SelectContent>
+                        </Select>
                       </FormControl>
                     </FormItemLayout>
                   )}

@@ -26,11 +26,11 @@ vi.mock('ui', () => ({
   DialogSection: ({ children }: { children: ReactNode }) => <div>{children}</div>,
   DialogSectionSeparator: () => <hr />,
   DialogTitle: ({ children }: { children: ReactNode }) => <h2>{children}</h2>,
-  Input_Shadcn_: (props: ComponentProps<'input'>) => <input {...props} />,
-  Label_Shadcn_: ({ children, ...props }: ComponentProps<'label'>) => (
+  Input: (props: ComponentProps<'input'>) => <input {...props} />,
+  Label: ({ children, ...props }: ComponentProps<'label'>) => (
     <label {...props}>{children}</label>
   ),
-  Select_Shadcn_: ({ children, onValueChange }: SelectMockProps) => (
+  Select: ({ children, onValueChange }: SelectMockProps) => (
     <div>
       {children}
       <button type="button" onClick={() => onValueChange('ai_tool')}>
@@ -44,10 +44,10 @@ vi.mock('ui', () => ({
       </button>
     </div>
   ),
-  SelectContent_Shadcn_: ({ children }: { children: ReactNode }) => <div>{children}</div>,
-  SelectItem_Shadcn_: ({ children }: { children: ReactNode }) => <div>{children}</div>,
-  SelectTrigger_Shadcn_: ({ children }: { children: ReactNode }) => <div>{children}</div>,
-  SelectValue_Shadcn_: ({ placeholder }: { placeholder?: string }) => <span>{placeholder}</span>,
+  SelectContent: ({ children }: { children: ReactNode }) => <div>{children}</div>,
+  SelectItem: ({ children }: { children: ReactNode }) => <div>{children}</div>,
+  SelectTrigger: ({ children }: { children: ReactNode }) => <div>{children}</div>,
+  SelectValue: ({ placeholder }: { placeholder?: string }) => <span>{placeholder}</span>,
   Textarea: (props: ComponentProps<'textarea'>) => <textarea {...props} />,
 }))
 

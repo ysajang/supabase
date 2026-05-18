@@ -8,13 +8,13 @@ import {
   DialogSection,
   DialogSectionSeparator,
   DialogTitle,
-  Input_Shadcn_,
-  Label_Shadcn_,
-  Select_Shadcn_,
-  SelectContent_Shadcn_,
-  SelectItem_Shadcn_,
-  SelectTrigger_Shadcn_,
-  SelectValue_Shadcn_,
+  Input,
+  Label,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
   Textarea,
 } from 'ui'
 
@@ -100,22 +100,22 @@ export function OnboardingSurveyDialog({
           {showOrgFields && (
             <>
               <div className="flex flex-col gap-y-2">
-                <Label_Shadcn_ htmlFor="onboarding-survey-org-kind">Type</Label_Shadcn_>
-                <Select_Shadcn_
+                <Label htmlFor="onboarding-survey-org-kind">Type</Label>
+                <Select
                   value={orgKind}
                   onValueChange={(value) => setOrgKind(value as keyof typeof ORG_KIND_TYPES)}
                 >
-                  <SelectTrigger_Shadcn_ id="onboarding-survey-org-kind" className="w-full">
-                    <SelectValue_Shadcn_ />
-                  </SelectTrigger_Shadcn_>
-                  <SelectContent_Shadcn_>
+                  <SelectTrigger id="onboarding-survey-org-kind" className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
                     {Object.entries(ORG_KIND_TYPES).map(([value, label]) => (
-                      <SelectItem_Shadcn_ key={value} value={value}>
+                      <SelectItem key={value} value={value}>
                         {label}
-                      </SelectItem_Shadcn_>
+                      </SelectItem>
                     ))}
-                  </SelectContent_Shadcn_>
-                </Select_Shadcn_>
+                  </SelectContent>
+                </Select>
                 <p className="text-xs text-foreground-lighter">
                   What best describes your organization?
                 </p>
@@ -123,22 +123,22 @@ export function OnboardingSurveyDialog({
 
               {orgKind === 'COMPANY' && (
                 <div className="flex flex-col gap-y-2">
-                  <Label_Shadcn_ htmlFor="onboarding-survey-org-size">Company size</Label_Shadcn_>
-                  <Select_Shadcn_
+                  <Label htmlFor="onboarding-survey-org-size">Company size</Label>
+                  <Select
                     value={orgSize}
                     onValueChange={(value) => setOrgSize(value as keyof typeof ORG_SIZE_TYPES)}
                   >
-                    <SelectTrigger_Shadcn_ id="onboarding-survey-org-size" className="w-full">
-                      <SelectValue_Shadcn_ />
-                    </SelectTrigger_Shadcn_>
-                    <SelectContent_Shadcn_>
+                    <SelectTrigger id="onboarding-survey-org-size" className="w-full">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
                       {Object.entries(ORG_SIZE_TYPES).map(([value, label]) => (
-                        <SelectItem_Shadcn_ key={value} value={value}>
+                        <SelectItem key={value} value={value}>
                           {label}
-                        </SelectItem_Shadcn_>
+                        </SelectItem>
                       ))}
-                    </SelectContent_Shadcn_>
-                  </Select_Shadcn_>
+                    </SelectContent>
+                  </Select>
                   <p className="text-xs text-foreground-lighter">
                     How many people are in your company?
                   </p>
@@ -148,29 +148,29 @@ export function OnboardingSurveyDialog({
           )}
 
           <div className="flex flex-col gap-y-2">
-            <Label_Shadcn_ htmlFor="onboarding-survey-heard-from">
+            <Label htmlFor="onboarding-survey-heard-from">
               Where did you hear about us?
-            </Label_Shadcn_>
-            <Select_Shadcn_
+            </Label>
+            <Select
               value={heardFrom}
               onValueChange={(value) => {
                 setHeardFrom(value)
                 if (!HEARD_FROM_FOLLOW_UP_BY_VALUE[value]) setHeardFromDetail('')
               }}
             >
-              <SelectTrigger_Shadcn_ id="onboarding-survey-heard-from" className="w-full">
-                <SelectValue_Shadcn_ placeholder="Select an option" />
-              </SelectTrigger_Shadcn_>
-              <SelectContent_Shadcn_>
+              <SelectTrigger id="onboarding-survey-heard-from" className="w-full">
+                <SelectValue placeholder="Select an option" />
+              </SelectTrigger>
+              <SelectContent>
                 {HEARD_FROM_OPTIONS.map((option) => (
-                  <SelectItem_Shadcn_ key={option.value} value={option.value}>
+                  <SelectItem key={option.value} value={option.value}>
                     {option.label}
-                  </SelectItem_Shadcn_>
+                  </SelectItem>
                 ))}
-              </SelectContent_Shadcn_>
-            </Select_Shadcn_>
+              </SelectContent>
+            </Select>
             {heardFromFollowUp && (
-              <Input_Shadcn_
+              <Input
                 aria-label={heardFromFollowUp.label}
                 value={heardFromDetail}
                 placeholder={heardFromFollowUp.placeholder}
@@ -181,9 +181,9 @@ export function OnboardingSurveyDialog({
 
           <div className="flex flex-col gap-y-2">
             <div className="flex items-center justify-between gap-3">
-              <Label_Shadcn_ htmlFor="onboarding-survey-building">
+              <Label htmlFor="onboarding-survey-building">
                 What are you building?
-              </Label_Shadcn_>
+              </Label>
               <span className="text-xs text-foreground-lighter">
                 {building.length}/{BUILDING_MAX_LENGTH}
               </span>

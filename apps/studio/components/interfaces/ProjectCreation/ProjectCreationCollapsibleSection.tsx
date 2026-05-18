@@ -1,6 +1,6 @@
 import { ChevronRight } from 'lucide-react'
 import { PropsWithChildren, ReactNode } from 'react'
-import { cn, Collapsible_Shadcn_, CollapsibleContent_Shadcn_, CollapsibleTrigger_Shadcn_ } from 'ui'
+import { cn, Collapsible, CollapsibleContent, CollapsibleTrigger } from 'ui'
 
 import Panel from '@/components/ui/Panel'
 
@@ -16,16 +16,16 @@ export const ProjectCreationCollapsibleSection = ({
 }: ProjectCreationCollapsibleSectionProps) => {
   return (
     <Panel.Content>
-      <Collapsible_Shadcn_>
-        <CollapsibleTrigger_Shadcn_ className="group/advanced-trigger font-mono uppercase tracking-widest text-xs flex items-center gap-1 text-foreground-lighter/75 hover:text-foreground-light transition data-open:text-foreground-light">
+      <Collapsible>
+        <CollapsibleTrigger className="group/advanced-trigger font-mono uppercase tracking-widest text-xs flex items-center gap-1 text-foreground-lighter/75 hover:text-foreground-light transition data-open:text-foreground-light">
           {title}
           <ChevronRight
             size={16}
             strokeWidth={1}
             className="mr-2 group-data-open/advanced-trigger:rotate-90 group-hover/advanced-trigger:text-foreground-light transition"
           />
-        </CollapsibleTrigger_Shadcn_>
-        <CollapsibleContent_Shadcn_
+        </CollapsibleTrigger>
+        <CollapsibleContent
           forceMount
           className={cn(
             'grid overflow-hidden transition-[grid-template-rows,opacity] duration-200 ease-out',
@@ -41,8 +41,8 @@ export const ProjectCreationCollapsibleSection = ({
               {children}
             </div>
           </div>
-        </CollapsibleContent_Shadcn_>
-      </Collapsible_Shadcn_>
+        </CollapsibleContent>
+      </Collapsible>
     </Panel.Content>
   )
 }
