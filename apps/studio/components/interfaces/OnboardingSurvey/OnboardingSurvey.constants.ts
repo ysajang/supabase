@@ -131,8 +131,6 @@ export function variantMatchesSurface(
 }
 
 export type OnboardingSurveyAnswers = {
-  kind?: string
-  size?: string
   heard_from?: string
   building?: string
 }
@@ -140,27 +138,14 @@ export type OnboardingSurveyAnswers = {
 export function buildOnboardingSurveyAnswers({
   heardFrom,
   building,
-  showOrgFields,
-  orgKind,
-  orgSize,
 }: {
   heardFrom?: string
   building?: string
-  showOrgFields?: boolean
-  orgKind?: string
-  orgSize?: string
 }): OnboardingSurveyAnswers {
-  const payload: OnboardingSurveyAnswers = {
+  return {
     heard_from: heardFrom,
     building,
   }
-
-  if (showOrgFields) {
-    payload.kind = orgKind
-    if (orgKind === 'COMPANY') payload.size = orgSize
-  }
-
-  return payload
 }
 
 export type OnboardingSurveyPromptStatus = 'submitted' | 'dismissed'

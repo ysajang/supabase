@@ -21,8 +21,6 @@ import { useProfile } from '@/lib/profile'
 import { useTrack } from '@/lib/telemetry/track'
 
 type SurveyValues = {
-  kind?: string
-  size?: string
   heard_from?: string
   building?: string
 }
@@ -134,7 +132,7 @@ export function useOnboardingSurveyPrompt({ surface }: { surface: OnboardingSurv
 
   const submitSurvey = useCallback(
     async (
-      { kind, size, heard_from, building }: SurveyValues,
+      { heard_from, building }: SurveyValues,
       { showSuccessToast = true }: SubmitSurveyOptions = {}
     ) => {
       if (!orgSlug) return false
@@ -142,8 +140,6 @@ export function useOnboardingSurveyPrompt({ surface }: { surface: OnboardingSurv
       try {
         await mutation.mutateAsync({
           slug: orgSlug,
-          kind,
-          size,
           heard_from,
           building,
         })

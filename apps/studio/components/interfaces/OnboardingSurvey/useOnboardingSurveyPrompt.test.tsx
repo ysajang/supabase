@@ -203,14 +203,12 @@ describe('useOnboardingSurveyPrompt', () => {
     })
   })
 
-  it('submits the survey payload including kind and size and records completion', async () => {
+  it('submits the survey payload and records completion', async () => {
     flagState.current = 'dialog'
     const { result } = renderHook(() => useOnboardingSurveyPrompt({ surface: 'project_home' }))
 
     await act(async () => {
       await result.current.submitSurvey({
-        kind: 'COMPANY',
-        size: '10',
         heard_from: 'ai_tool',
         building: 'SaaS app',
       })
@@ -218,8 +216,6 @@ describe('useOnboardingSurveyPrompt', () => {
 
     expect(mockMutateAsync).toHaveBeenCalledWith({
       slug: 'test-org',
-      kind: 'COMPANY',
-      size: '10',
       heard_from: 'ai_tool',
       building: 'SaaS app',
     })

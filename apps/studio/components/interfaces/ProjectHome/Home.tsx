@@ -100,10 +100,7 @@ export const ProjectHome = () => {
   return (
     <ProjectNeedsSecuring>
       {showOnboardingSurveyToast && (
-        <OnboardingSurveyToastPrompt
-          autoOpen={shouldAutoOpenOnboardingSurveyDialog}
-          showOrgFields
-        />
+        <OnboardingSurveyToastPrompt autoOpen={shouldAutoOpenOnboardingSurveyDialog} />
       )}
       <div className="w-full h-full">
         <ScaffoldContainer size="large" className={cn(isPaused && 'h-full')}>

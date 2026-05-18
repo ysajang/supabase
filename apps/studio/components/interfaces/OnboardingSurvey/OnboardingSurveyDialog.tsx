@@ -25,9 +25,6 @@ import {
   formatHeardFromAnswer,
   HEARD_FROM_FOLLOW_UP_BY_VALUE,
   HEARD_FROM_OPTIONS,
-  ORG_KIND_TYPES,
-  ORG_SIZE_DEFAULT,
-  ORG_SIZE_TYPES,
   type OnboardingSurveyAnswers,
 } from './OnboardingSurvey.constants'
 
@@ -39,7 +36,6 @@ type OnboardingSurveyDialogProps = {
   onOpenChange: (open: boolean) => void
   onSkip: () => void
   onSubmit: (values: OnboardingSurveyAnswers) => Promise<unknown> | unknown
-  showOrgFields?: boolean
   title?: string
 }
 
@@ -51,20 +47,12 @@ export function OnboardingSurveyDialog({
   onOpenChange,
   onSkip,
   onSubmit,
-  showOrgFields = false,
   title = 'Help us tailor your setup',
 }: OnboardingSurveyDialogProps) {
-  const [orgKind, setOrgKind] = useState<keyof typeof ORG_KIND_TYPES>('COMPANY')
-  const [orgSize, setOrgSize] = useState<keyof typeof ORG_SIZE_TYPES>(ORG_SIZE_DEFAULT)
   const [heardFrom, setHeardFrom] = useState('')
   const [heardFromDetail, setHeardFromDetail] = useState('')
   const [building, setBuilding] = useState('')
   const heardFromFollowUp = HEARD_FROM_FOLLOW_UP_BY_VALUE[heardFrom]
-  const dialogDescription =
-    showOrgFields &&
-    description === 'Answer two optional questions so we can improve your Supabase experience.'
-      ? 'Answer a few optional questions so we can improve your Supabase experience.'
-      : description
 
   const handleOpenChange = (nextOpen: boolean) => {
     if (!nextOpen && open && !isSubmitting) {
@@ -80,9 +68,6 @@ export function OnboardingSurveyDialog({
       buildOnboardingSurveyAnswers({
         heardFrom: formatHeardFromAnswer(heardFrom, heardFromDetail),
         building,
-        showOrgFields,
-        orgKind,
-        orgSize,
       })
     )
   }
@@ -95,62 +80,10 @@ export function OnboardingSurveyDialog({
         </DialogHeader>
         <DialogSectionSeparator />
         <DialogSection className="flex flex-col gap-y-6 pt-4.5 pb-5">
-          <p className="text-sm text-foreground-light">{dialogDescription}</p>
-
-          {showOrgFields && (
-            <>
-              <div className="flex flex-col gap-y-2">
-                <Label htmlFor="onboarding-survey-org-kind">Type</Label>
-                <Select
-                  value={orgKind}
-                  onValueChange={(value) => setOrgKind(value as keyof typeof ORG_KIND_TYPES)}
-                >
-                  <SelectTrigger id="onboarding-survey-org-kind" className="w-full">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(ORG_KIND_TYPES).map(([value, label]) => (
-                      <SelectItem key={value} value={value}>
-                        {label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <p className="text-xs text-foreground-lighter">
-                  What best describes your organization?
-                </p>
-              </div>
-
-              {orgKind === 'COMPANY' && (
-                <div className="flex flex-col gap-y-2">
-                  <Label htmlFor="onboarding-survey-org-size">Company size</Label>
-                  <Select
-                    value={orgSize}
-                    onValueChange={(value) => setOrgSize(value as keyof typeof ORG_SIZE_TYPES)}
-                  >
-                    <SelectTrigger id="onboarding-survey-org-size" className="w-full">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {Object.entries(ORG_SIZE_TYPES).map(([value, label]) => (
-                        <SelectItem key={value} value={value}>
-                          {label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <p className="text-xs text-foreground-lighter">
-                    How many people are in your company?
-                  </p>
-                </div>
-              )}
-            </>
-          )}
+          <p className="text-sm text-foreground-light">{description}</p>
 
           <div className="flex flex-col gap-y-2">
-            <Label htmlFor="onboarding-survey-heard-from">
-              Where did you hear about us?
-            </Label>
+            <Label htmlFor="onboarding-survey-heard-from">Where did you hear about us?</Label>
             <Select
               value={heardFrom}
               onValueChange={(value) => {
@@ -181,9 +114,7 @@ export function OnboardingSurveyDialog({
 
           <div className="flex flex-col gap-y-2">
             <div className="flex items-center justify-between gap-3">
-              <Label htmlFor="onboarding-survey-building">
-                What are you building?
-              </Label>
+              <Label htmlFor="onboarding-survey-building">What are you building?</Label>
               <span className="text-xs text-foreground-lighter">
                 {building.length}/{BUILDING_MAX_LENGTH}
               </span>

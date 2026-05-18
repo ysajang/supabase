@@ -8,7 +8,6 @@ import { BANNER_ID, useBannerStack } from '@/components/ui/BannerStack/BannerSta
 
 type OnboardingSurveyToastPromptProps = {
   autoOpen?: boolean
-  showOrgFields?: boolean
 }
 
 const WELCOME_TITLE = 'Welcome to Supabase'
@@ -16,12 +15,8 @@ const WELCOME_TITLE = 'Welcome to Supabase'
 const WELCOME_DESCRIPTION =
   'Your project is spinning up. While you wait, answer two optional questions so we can better serve you.'
 
-const WELCOME_DESCRIPTION_WITH_ORG_FIELDS =
-  'Your project is spinning up. While you wait, answer a few optional questions so we can better serve you.'
-
 export function OnboardingSurveyToastPrompt({
   autoOpen = false,
-  showOrgFields = false,
 }: OnboardingSurveyToastPromptProps) {
   const prompt = useOnboardingSurveyPrompt({ surface: 'project_home' })
   const { addBanner, dismissBanner } = useBannerStack()
@@ -56,9 +51,8 @@ export function OnboardingSurveyToastPrompt({
             <div className="flex flex-col gap-y-1 mb-2">
               <p className="text-sm font-medium">Help us tailor your setup</p>
               <p className="text-xs text-foreground-lighter text-balance">
-                {showOrgFields
-                  ? 'Answer a few optional questions about your organization, how you found Supabase, and what you are building.'
-                  : 'Answer two optional questions about how you found Supabase and what you are building.'}
+                Answer two optional questions about how you found Supabase and what you are
+                building.
               </p>
             </div>
             <div className="flex gap-2">
@@ -91,32 +85,17 @@ export function OnboardingSurveyToastPrompt({
     return () => {
       dismissBanner(BANNER_ID.ONBOARDING_SURVEY)
     }
-  }, [
-    addBanner,
-    autoOpen,
-    dismissBanner,
-    dismissPrompt,
-    openDialog,
-    shouldShowPrompt,
-    showOrgFields,
-  ])
+  }, [addBanner, autoOpen, dismissBanner, dismissPrompt, openDialog, shouldShowPrompt])
 
   return (
     <OnboardingSurveyDialog
       open={prompt.open}
       title={autoOpen ? WELCOME_TITLE : undefined}
-      description={
-        autoOpen
-          ? showOrgFields
-            ? WELCOME_DESCRIPTION_WITH_ORG_FIELDS
-            : WELCOME_DESCRIPTION
-          : undefined
-      }
+      description={autoOpen ? WELCOME_DESCRIPTION : undefined}
       isSubmitting={prompt.isSubmitting}
       onDismiss={() => prompt.dismissPrompt('dialog_dismissed')}
       onOpenChange={prompt.setOpen}
       onSkip={() => prompt.dismissPrompt('skip_button')}
-      showOrgFields={showOrgFields}
       onSubmit={prompt.submitSurvey}
     />
   )
