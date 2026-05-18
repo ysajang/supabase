@@ -120,11 +120,6 @@ describe('useOnboardingSurveyPrompt', () => {
     const { result } = renderHook(() => useOnboardingSurveyPrompt({ surface: 'org_form' }))
 
     expect(result.current.shouldShowPrompt).toBe(true)
-    expect(mockTrack).toHaveBeenCalledWith('onboarding_survey_prompt_shown', {
-      surface: 'org_form',
-      orgSlug: 'test-org',
-      projectRef: 'project-ref',
-    })
   })
 
   it('does not show the prompt when the variant does not match the surface', () => {
@@ -179,28 +174,15 @@ describe('useOnboardingSurveyPrompt', () => {
     expect(result.current.shouldShowPrompt).toBe(false)
   })
 
-  it('tracks dialog opens and dismissals', () => {
+  it('records dismissal when user skips', () => {
     flagState.current = 'toast'
     const { result } = renderHook(() => useOnboardingSurveyPrompt({ surface: 'project_home' }))
 
-    act(() => result.current.openDialog())
-    expect(result.current.open).toBe(true)
-    expect(mockTrack).toHaveBeenCalledWith('onboarding_survey_dialog_opened', {
-      surface: 'project_home',
-      orgSlug: 'test-org',
-      projectRef: 'project-ref',
-    })
-
     act(() => result.current.dismissPrompt('skip_button'))
+
     expect(mockSetLocalStorageState).toHaveBeenCalledWith(
       expect.objectContaining({ status: 'dismissed' })
     )
-    expect(mockTrack).toHaveBeenCalledWith('onboarding_survey_skipped', {
-      surface: 'project_home',
-      orgSlug: 'test-org',
-      projectRef: 'project-ref',
-      reason: 'skip_button',
-    })
   })
 
   it('submits the survey payload and records completion', async () => {
@@ -222,12 +204,5 @@ describe('useOnboardingSurveyPrompt', () => {
     expect(mockSetLocalStorageState).toHaveBeenCalledWith(
       expect.objectContaining({ status: 'submitted' })
     )
-    expect(mockTrack).toHaveBeenCalledWith('onboarding_survey_submitted', {
-      surface: 'project_home',
-      orgSlug: 'test-org',
-      projectRef: 'project-ref',
-      hasHeardFrom: true,
-      hasBuilding: true,
-    })
   })
 })

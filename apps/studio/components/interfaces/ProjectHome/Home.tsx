@@ -41,8 +41,10 @@ export const ProjectHome = () => {
   const { variant: onboardingSurveyVariant } = useOnboardingSurveyPrompt({
     surface: 'project_home',
   })
+  // Platform's `inserted_at` is UTC but lacks a `Z` suffix, so we parse it explicitly as UTC.
   const isRecentlyCreatedProject =
-    !!project?.inserted_at && dayjs(project.inserted_at).isAfter(dayjs().subtract(1, 'hour'))
+    !!project?.inserted_at &&
+    dayjs.utc(project.inserted_at).isAfter(dayjs.utc().subtract(1, 'hour'))
   const inProvisioningWindow = isComingUp || isRecentlyCreatedProject
 
   const showOnboardingSurveyToast =

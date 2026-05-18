@@ -23,6 +23,10 @@ const { mockAddBanner, mockDismissBanner, mockOpenDialog, promptState } = vi.hoi
   },
 }))
 
+vi.mock('@/lib/telemetry/track', () => ({
+  useTrack: () => vi.fn(),
+}))
+
 vi.mock('@/components/ui/BannerStack/BannerCard', () => ({
   BannerCard: ({ children }: { children: ReactNode }) => <div>{children}</div>,
 }))
@@ -51,9 +55,7 @@ vi.mock('ui', () => ({
   DialogSection: ({ children }: { children: ReactNode }) => <div>{children}</div>,
   DialogSectionSeparator: () => <hr />,
   DialogTitle: ({ children }: { children: ReactNode }) => <h2>{children}</h2>,
-  Label: ({ children, ...props }: ComponentProps<'label'>) => (
-    <label {...props}>{children}</label>
-  ),
+  Label: ({ children, ...props }: ComponentProps<'label'>) => <label {...props}>{children}</label>,
   Select: ({ children }: { children: ReactNode }) => <div>{children}</div>,
   SelectContent: ({ children }: { children: ReactNode }) => <div>{children}</div>,
   SelectItem: ({ children }: { children: ReactNode }) => <div>{children}</div>,

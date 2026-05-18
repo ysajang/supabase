@@ -115,7 +115,7 @@ export const NewOrgForm = ({
   const user = useProfile()
   const track = useTrack()
   const { resolvedTheme } = useTheme()
-  const hasTrackedSurveyShown = useRef(false)
+  const hasTrackedSurveyOpened = useRef(false)
 
   const isBillingEnabled = useIsFeatureEnabled('billing:all')
 
@@ -184,10 +184,10 @@ export const NewOrgForm = ({
 
   useEffect(() => {
     if (!showOnboardingSurveyInOrgForm) return
-    if (hasTrackedSurveyShown.current) return
+    if (hasTrackedSurveyOpened.current) return
 
-    hasTrackedSurveyShown.current = true
-    track('onboarding_survey_prompt_shown', {
+    hasTrackedSurveyOpened.current = true
+    track('onboarding_survey_prompt_opened', {
       surface: 'org_form',
     })
   }, [showOnboardingSurveyInOrgForm, track])
@@ -310,14 +310,22 @@ export const NewOrgForm = ({
       const hasHeardFrom = !!heardFrom
       const hasBuilding = !!building
 
+      const groupOverrides = { organization: slug }
+
       if (!hasHeardFrom && !hasBuilding) {
-        track('onboarding_survey_skipped', {
-          surface: 'org_form',
-          orgSlug: slug,
-          reason: 'org_form_blank',
-        })
+        track(
+          'onboarding_survey_dismissed',
+          { surface: 'org_form', reason: 'org_form_blank' },
+          groupOverrides
+        )
         return
       }
+
+      track(
+        'onboarding_survey_submit_button_clicked',
+        { surface: 'org_form', hasHeardFrom, hasBuilding },
+        groupOverrides
+      )
 
       try {
         await submitOnboardingSurvey({
@@ -327,19 +335,12 @@ export const NewOrgForm = ({
           heard_from: heardFrom,
           building,
         })
-        track('onboarding_survey_submitted', {
-          surface: 'org_form',
-          orgSlug: slug,
-          hasHeardFrom,
-          hasBuilding,
-        })
       } catch {
-        track('onboarding_survey_submit_failed', {
-          surface: 'org_form',
-          orgSlug: slug,
-          hasHeardFrom,
-          hasBuilding,
-        })
+        track(
+          'onboarding_survey_submit_failed',
+          { surface: 'org_form', hasHeardFrom, hasBuilding },
+          groupOverrides
+        )
       }
     },
     [form, showOnboardingSurveyInOrgForm, submitOnboardingSurvey, track]
@@ -459,10 +460,8 @@ export const NewOrgForm = ({
     return onPaymentMethodReset()
   }
 
-  const buildingDescription = showOnboardingSurveyInline ? undefined : 'What are you building?'
-  const buildingPlaceholder = showOnboardingSurveyInline
-    ? `What are you building? ${BUILDING_PLACEHOLDER.replace(/^e\.g\./, 'E.g.')}`
-    : BUILDING_PLACEHOLDER
+  const buildingDescription = 'What are you building?'
+  const buildingPlaceholder = BUILDING_PLACEHOLDER
 
   const orgKindField = (
     <FormField
@@ -586,16 +585,16 @@ export const NewOrgForm = ({
       render={({ field }) => (
         <FormItemLayout label="Project" layout="horizontal" description={buildingDescription}>
           <FormControl>
-            <div className="flex flex-col gap-y-1">
+            <div className="relative">
               <Textarea
                 {...field}
                 value={field.value ?? ''}
                 rows={3}
                 maxLength={BUILDING_MAX_LENGTH}
                 placeholder={buildingPlaceholder}
-                className="resize-none"
+                className="resize-none pb-6"
               />
-              <span className="self-end text-xs text-foreground-lighter">
+              <span className="pointer-events-none absolute bottom-1.5 right-2 text-xs text-foreground-lighter">
                 {(field.value ?? '').length}/{BUILDING_MAX_LENGTH}
               </span>
             </div>

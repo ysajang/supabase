@@ -5,6 +5,7 @@ import { OnboardingSurveyDialog } from './OnboardingSurveyDialog'
 import { useOnboardingSurveyPrompt } from './useOnboardingSurveyPrompt'
 import { BannerCard } from '@/components/ui/BannerStack/BannerCard'
 import { BANNER_ID, useBannerStack } from '@/components/ui/BannerStack/BannerStackProvider'
+import { useTrack } from '@/lib/telemetry/track'
 
 type OnboardingSurveyToastPromptProps = {
   autoOpen?: boolean
@@ -18,10 +19,18 @@ const WELCOME_DESCRIPTION =
 export function OnboardingSurveyToastPrompt({
   autoOpen = false,
 }: OnboardingSurveyToastPromptProps) {
+  const track = useTrack()
   const prompt = useOnboardingSurveyPrompt({ surface: 'project_home' })
   const { addBanner, dismissBanner } = useBannerStack()
   const hasAutoOpened = useRef(false)
+  const hasTrackedOpened = useRef(false)
   const { dismissPrompt, openDialog, shouldShowPrompt } = prompt
+
+  useEffect(() => {
+    if (!shouldShowPrompt || hasTrackedOpened.current) return
+    hasTrackedOpened.current = true
+    track('onboarding_survey_prompt_opened', { surface: 'project_home' })
+  }, [shouldShowPrompt, track])
 
   useEffect(() => {
     if (!autoOpen || !shouldShowPrompt || hasAutoOpened.current) return
@@ -61,6 +70,7 @@ export function OnboardingSurveyToastPrompt({
                 size="tiny"
                 onClick={() => {
                   dismissBanner(BANNER_ID.ONBOARDING_SURVEY)
+                  track('onboarding_survey_answer_button_clicked', { surface: 'project_home' })
                   openDialog()
                 }}
               >
@@ -85,7 +95,7 @@ export function OnboardingSurveyToastPrompt({
     return () => {
       dismissBanner(BANNER_ID.ONBOARDING_SURVEY)
     }
-  }, [addBanner, autoOpen, dismissBanner, dismissPrompt, openDialog, shouldShowPrompt])
+  }, [addBanner, autoOpen, dismissBanner, dismissPrompt, openDialog, shouldShowPrompt, track])
 
   return (
     <OnboardingSurveyDialog

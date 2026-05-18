@@ -27,18 +27,9 @@ export type TableEventAction = (typeof TABLE_EVENT_ACTIONS)[keyof typeof TABLE_E
 export const TABLE_EVENT_VALUES: TableEventAction[] = Object.values(TABLE_EVENT_ACTIONS)
 
 /**
- * Registry of active PostHog experiments. The key is the PostHog flag key
- * (passed to `usePHFlag` and configured on PostHog). The value is the
- * exposure event name base, which becomes
- * `${value}_experiment_exposed` when emitted via `useTrackExperimentExposure`.
- *
- * Convention for new experiments: snake_case the exposure name so the
- * emitted event matches the rest of the catalog. Existing camelCase
- * exposure names (e.g. `headerUpgradeCta`) are kept to avoid breaking
- * saved PostHog insights and experiment dashboards.
- *
- * Adding a new experiment: register the flag key here, then pass it to
- * `useTrackExperimentExposure`. TypeScript will reject any unregistered key.
+ * Maps PostHog flag key → exposure event-name base. Emitted event becomes
+ * `${value}_experiment_exposed`. Snake_case the value for new experiments;
+ * legacy camelCase values are kept to avoid breaking saved insights.
  */
 export const EXPERIMENTS = {
   headerUpgradeCta: 'headerUpgradeCta',
@@ -453,48 +444,42 @@ export interface ProjectCreationSimpleVersionConfirmModalOpenedEvent {
 
 type OnboardingSurveySurface = 'building_state' | 'project_home' | 'org_form'
 
-type OnboardingSurveyBaseProperties = {
-  surface: OnboardingSurveySurface
-  orgSlug?: string
-  projectRef?: string
-}
-
 /**
- * Onboarding survey prompt was shown after project creation.
+ * Onboarding survey prompt UI became visible.
  *
  * @group Events
  * @source studio
- * @page /dashboard/project/{ref}
  */
-export interface OnboardingSurveyPromptShownEvent {
-  action: 'onboarding_survey_prompt_shown'
-  properties: OnboardingSurveyBaseProperties
+export interface OnboardingSurveyPromptOpenedEvent {
+  action: 'onboarding_survey_prompt_opened'
+  properties: { surface: OnboardingSurveySurface }
   groups: Partial<TelemetryGroups>
 }
 
 /**
- * User opened the onboarding survey dialog.
+ * User clicked the Answer button on the toast banner. Toast variant only.
  *
  * @group Events
  * @source studio
- * @page /dashboard/project/{ref}
  */
-export interface OnboardingSurveyDialogOpenedEvent {
-  action: 'onboarding_survey_dialog_opened'
-  properties: OnboardingSurveyBaseProperties
+export interface OnboardingSurveyAnswerButtonClickedEvent {
+  action: 'onboarding_survey_answer_button_clicked'
+  properties: { surface: OnboardingSurveySurface }
   groups: Partial<TelemetryGroups>
 }
 
 /**
- * User submitted the onboarding survey.
+ * User clicked Submit. Fires before the backend mutation; pair with
+ * OnboardingSurveySubmitFailedEvent for failure rate. The platform's own
+ * `onboarding_survey_submitted` event tracks actual completions.
  *
  * @group Events
  * @source studio
- * @page /dashboard/project/{ref}
  */
-export interface OnboardingSurveySubmittedEvent {
-  action: 'onboarding_survey_submitted'
-  properties: OnboardingSurveyBaseProperties & {
+export interface OnboardingSurveySubmitButtonClickedEvent {
+  action: 'onboarding_survey_submit_button_clicked'
+  properties: {
+    surface: OnboardingSurveySurface
     hasHeardFrom: boolean
     hasBuilding: boolean
   }
@@ -502,15 +487,15 @@ export interface OnboardingSurveySubmittedEvent {
 }
 
 /**
- * User skipped or dismissed the onboarding survey.
+ * User dismissed the onboarding survey.
  *
  * @group Events
  * @source studio
- * @page /dashboard/project/{ref}
  */
-export interface OnboardingSurveySkippedEvent {
-  action: 'onboarding_survey_skipped'
-  properties: OnboardingSurveyBaseProperties & {
+export interface OnboardingSurveyDismissedEvent {
+  action: 'onboarding_survey_dismissed'
+  properties: {
+    surface: OnboardingSurveySurface
     reason: 'skip_button' | 'dialog_dismissed' | 'toast_skip' | 'org_form_blank' | 'close_button'
   }
   groups: Partial<TelemetryGroups>
@@ -521,11 +506,11 @@ export interface OnboardingSurveySkippedEvent {
  *
  * @group Events
  * @source studio
- * @page /dashboard/project/{ref}
  */
 export interface OnboardingSurveySubmitFailedEvent {
   action: 'onboarding_survey_submit_failed'
-  properties: OnboardingSurveyBaseProperties & {
+  properties: {
+    surface: OnboardingSurveySurface
     hasHeardFrom: boolean
     hasBuilding: boolean
   }
@@ -3578,10 +3563,10 @@ export type TelemetryEvent =
   | ProjectCreationGithubConnectClickedEvent
   | ProjectCreationSimpleVersionSubmittedEvent
   | ProjectCreationSimpleVersionConfirmModalOpenedEvent
-  | OnboardingSurveyPromptShownEvent
-  | OnboardingSurveyDialogOpenedEvent
-  | OnboardingSurveySubmittedEvent
-  | OnboardingSurveySkippedEvent
+  | OnboardingSurveyPromptOpenedEvent
+  | OnboardingSurveyAnswerButtonClickedEvent
+  | OnboardingSurveySubmitButtonClickedEvent
+  | OnboardingSurveyDismissedEvent
   | OnboardingSurveySubmitFailedEvent
   | TableApiAccessToggleClickedEvent
   | ProjectCreationInitialStepPromptIntendedEvent

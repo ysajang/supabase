@@ -14,6 +14,8 @@ export type OnboardingSurveyVariables = {
   building?: string
 }
 
+const trim = (v?: string) => v?.trim() || undefined
+
 export function buildOnboardingSurveyPayload({
   slug,
   kind,
@@ -21,17 +23,12 @@ export function buildOnboardingSurveyPayload({
   heard_from,
   building,
 }: OnboardingSurveyVariables): OnboardingSurveyBody {
-  const trimmedKind = kind?.trim()
-  const trimmedSize = size?.trim()
-  const trimmedHeardFrom = heard_from?.trim()
-  const trimmedBuilding = building?.trim()
-
   return {
     slug,
-    ...(trimmedKind ? { kind: trimmedKind } : {}),
-    ...(trimmedSize ? { size: trimmedSize } : {}),
-    ...(trimmedHeardFrom ? { heard_from: trimmedHeardFrom } : {}),
-    ...(trimmedBuilding ? { building: trimmedBuilding } : {}),
+    kind: trim(kind),
+    size: trim(size),
+    heard_from: trim(heard_from),
+    building: trim(building),
   }
 }
 
