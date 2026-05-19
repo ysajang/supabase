@@ -35,9 +35,7 @@ export const ProjectCreationCollapsibleSection = ({
         >
           <div className="min-h-0 overflow-hidden">
             <div className="pt-2">
-              {description && (
-                <p className="text-xs text-foreground-lighter mb-6">{description}</p>
-              )}
+              {description && <p className="text-xs text-foreground-lighter mb-6">{description}</p>}
               {children}
             </div>
           </div>

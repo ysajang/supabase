@@ -27,9 +27,7 @@ vi.mock('ui', () => ({
   DialogSectionSeparator: () => <hr />,
   DialogTitle: ({ children }: { children: ReactNode }) => <h2>{children}</h2>,
   Input: (props: ComponentProps<'input'>) => <input {...props} />,
-  Label: ({ children, ...props }: ComponentProps<'label'>) => (
-    <label {...props}>{children}</label>
-  ),
+  Label: ({ children, ...props }: ComponentProps<'label'>) => <label {...props}>{children}</label>,
   Select: ({ children, onValueChange }: SelectMockProps) => (
     <div>
       {children}
