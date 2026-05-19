@@ -41,13 +41,13 @@ type OnboardingSurveyDialogProps = {
 
 export function OnboardingSurveyDialog({
   open,
-  description = 'Answer two optional questions so we can improve your Supabase experience.',
+  description = 'Answer two optional questions about how you found Supabase and what you are building.',
   isSubmitting = false,
   onDismiss,
   onOpenChange,
   onSkip,
   onSubmit,
-  title = 'Help us tailor your setup',
+  title = 'Help improve Supabase',
 }: OnboardingSurveyDialogProps) {
   const [heardFrom, setHeardFrom] = useState('')
   const [heardFromDetail, setHeardFromDetail] = useState('')

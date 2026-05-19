@@ -180,7 +180,7 @@ export const NewOrgForm = ({
     surface: 'org_form',
   })
   const showOnboardingSurveyInOrgForm = isOrgFormVariant(onboardingSurveyVariant)
-  const showOnboardingSurveyInline = onboardingSurveyVariant === 'org_form_inline'
+  const showOnboardingSurveyExpanded = onboardingSurveyVariant === 'org_form_expanded'
   // Skip kind/size on org creation for any variant that will later fire the
   // survey endpoint — sendOrgCreationSurvey dedupes on (user, org_slug) at the
   // parent row, so letting both paths fire would swallow the later call.
@@ -541,11 +541,7 @@ export const NewOrgForm = ({
       control={form.control}
       name="heard_from"
       render={({ field }) => (
-        <FormItemLayout
-          label="Source"
-          layout="horizontal"
-          description="Where did you hear about us?"
-        >
+        <FormItemLayout label="Via" layout="horizontal" description="Where did you hear about us?">
           <FormControl>
             <div className="flex flex-col gap-y-2">
               <Select
@@ -596,7 +592,7 @@ export const NewOrgForm = ({
       control={form.control}
       name="building"
       render={({ field }) => (
-        <FormItemLayout label="Project" layout="horizontal" description={buildingDescription}>
+        <FormItemLayout label="Building" layout="horizontal" description={buildingDescription}>
           <FormControl>
             <div className="relative">
               <Textarea
@@ -741,21 +737,13 @@ export const NewOrgForm = ({
             )}
 
             {showOnboardingSurveyInOrgForm ? (
-              showOnboardingSurveyInline ? (
-                <>
-                  <Panel.Content>{orgKindField}</Panel.Content>
-                  {orgSizeField && <Panel.Content>{orgSizeField}</Panel.Content>}
-                  <Panel.Content>{heardFromField}</Panel.Content>
-                  <Panel.Content>{buildingField}</Panel.Content>
-                </>
-              ) : (
-                <ProjectCreationCollapsibleSection
-                  title="Help us tailor your setup"
-                  description="Optional questions to help us improve your onboarding"
-                >
-                  {onboardingSurveyFields}
-                </ProjectCreationCollapsibleSection>
-              )
+              <ProjectCreationCollapsibleSection
+                title="Help improve Supabase"
+                description="Optional questions to help us improve the Supabase experience"
+                defaultOpen={showOnboardingSurveyExpanded}
+              >
+                {onboardingSurveyFields}
+              </ProjectCreationCollapsibleSection>
             ) : (
               <>
                 <Panel.Content>{orgKindField}</Panel.Content>

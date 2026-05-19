@@ -24,7 +24,7 @@ const {
   projectState,
 } = vi.hoisted(() => ({
   flagState: {
-    current: 'org_form_collapsible' as OnboardingSurveyVariant | false | undefined,
+    current: 'org_form_collapsed' as OnboardingSurveyVariant | false | undefined,
   },
   localStorageState: { current: null as PromptState },
   mockMutateAsync: vi.fn(),
@@ -94,7 +94,7 @@ vi.mock('@/lib/telemetry/track', () => ({
 
 describe('useOnboardingSurveyPrompt', () => {
   beforeEach(() => {
-    flagState.current = 'org_form_collapsible'
+    flagState.current = 'org_form_collapsed'
     localStorageState.current = null
     organizationState.current = { slug: 'test-org' }
     profileState.current = { gotrue_id: 'user-1', id: 1 }
@@ -116,14 +116,14 @@ describe('useOnboardingSurveyPrompt', () => {
   })
 
   it('shows the prompt when the variant matches the surface', () => {
-    flagState.current = 'org_form_collapsible'
+    flagState.current = 'org_form_collapsed'
     const { result } = renderHook(() => useOnboardingSurveyPrompt({ surface: 'org_form' }))
 
     expect(result.current.shouldShowPrompt).toBe(true)
   })
 
   it('does not show the prompt when the variant does not match the surface', () => {
-    flagState.current = 'org_form_collapsible'
+    flagState.current = 'org_form_collapsed'
     const { result } = renderHook(() => useOnboardingSurveyPrompt({ surface: 'project_home' }))
 
     expect(result.current.shouldShowPrompt).toBe(false)
@@ -144,13 +144,13 @@ describe('useOnboardingSurveyPrompt', () => {
   })
 
   it('fires experiment exposure with the variant on mount', async () => {
-    flagState.current = 'org_form_inline'
+    flagState.current = 'org_form_expanded'
     renderHook(() => useOnboardingSurveyPrompt({ surface: 'org_form' }))
 
     await waitFor(() =>
       expect(mockTrackExperimentExposure).toHaveBeenCalledWith(
         'onboardingSurveyPlacement',
-        'org_form_inline'
+        'org_form_expanded'
       )
     )
   })
@@ -163,7 +163,7 @@ describe('useOnboardingSurveyPrompt', () => {
   })
 
   it('does not show after the user has dismissed or submitted', () => {
-    flagState.current = 'org_form_collapsible'
+    flagState.current = 'org_form_collapsed'
     localStorageState.current = {
       status: 'submitted',
       updatedAt: '2026-05-07T00:00:00.000Z',
@@ -198,6 +198,8 @@ describe('useOnboardingSurveyPrompt', () => {
 
     expect(mockMutateAsync).toHaveBeenCalledWith({
       slug: 'test-org',
+      kind: 'PERSONAL',
+      size: '1',
       heard_from: 'ai_tool',
       building: 'SaaS app',
     })

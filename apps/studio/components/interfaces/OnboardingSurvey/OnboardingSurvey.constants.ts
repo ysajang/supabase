@@ -89,8 +89,8 @@ export const ONBOARDING_SURVEY_EXPERIMENT_ID = 'onboardingSurveyPlacement'
 
 export const ONBOARDING_SURVEY_VARIANTS = [
   'control',
-  'org_form_collapsible',
-  'org_form_inline',
+  'org_form_collapsed',
+  'org_form_expanded',
   'dialog',
   'toast',
 ] as const
@@ -100,8 +100,8 @@ export type OnboardingSurveyVariant = (typeof ONBOARDING_SURVEY_VARIANTS)[number
 export type OnboardingSurveySurface = 'org_form' | 'project_home'
 
 const ORG_FORM_VARIANTS: ReadonlySet<OnboardingSurveyVariant> = new Set([
-  'org_form_collapsible',
-  'org_form_inline',
+  'org_form_collapsed',
+  'org_form_expanded',
 ])
 
 const PROJECT_HOME_VARIANTS: ReadonlySet<OnboardingSurveyVariant> = new Set(['dialog', 'toast'])

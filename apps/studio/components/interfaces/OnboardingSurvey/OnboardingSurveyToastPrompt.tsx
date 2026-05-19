@@ -14,7 +14,7 @@ type OnboardingSurveyToastPromptProps = {
 const WELCOME_TITLE = 'Welcome to Supabase'
 
 const WELCOME_DESCRIPTION =
-  'Your project is spinning up. While you wait, answer two optional questions so we can better serve you.'
+  'Answer two optional questions about how you found Supabase and what you are building.'
 
 export function OnboardingSurveyToastPrompt({
   autoOpen = false,
@@ -58,7 +58,7 @@ export function OnboardingSurveyToastPrompt({
         >
           <div className="flex flex-col gap-y-4">
             <div className="flex flex-col gap-y-1 mb-2">
-              <p className="text-sm font-medium">Help us tailor your setup</p>
+              <p className="text-sm font-medium">Help improve Supabase</p>
               <p className="text-xs text-foreground-lighter text-balance">
                 Answer two optional questions about how you found Supabase and what you are
                 building.

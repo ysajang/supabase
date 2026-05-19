@@ -103,7 +103,7 @@ describe('OnboardingSurveyToastPrompt', () => {
     expect(screen.getByText('Welcome to Supabase')).toBeTruthy()
     expect(
       screen.getByText(
-        'Your project is spinning up. While you wait, answer two optional questions so we can better serve you.'
+        'Answer two optional questions about how you found Supabase and what you are building.'
       )
     ).toBeTruthy()
   })

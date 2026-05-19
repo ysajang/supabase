@@ -5,18 +5,20 @@ import { cn, Collapsible, CollapsibleContent, CollapsibleTrigger } from 'ui'
 import Panel from '@/components/ui/Panel'
 
 type ProjectCreationCollapsibleSectionProps = PropsWithChildren<{
+  defaultOpen?: boolean
   description?: ReactNode
   title: string
 }>
 
 export const ProjectCreationCollapsibleSection = ({
   children,
+  defaultOpen = false,
   description,
   title,
 }: ProjectCreationCollapsibleSectionProps) => {
   return (
     <Panel.Content>
-      <Collapsible>
+      <Collapsible defaultOpen={defaultOpen}>
         <CollapsibleTrigger className="group/advanced-trigger font-mono uppercase tracking-widest text-xs flex items-center gap-1 text-foreground-lighter/75 hover:text-foreground-light transition data-open:text-foreground-light">
           {title}
           <ChevronRight
