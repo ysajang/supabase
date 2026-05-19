@@ -36,7 +36,7 @@ export const TABLE_EVENT_VALUES: TableEventAction[] = Object.values(TABLE_EVENT_
  * legacy camelCase values are kept to avoid breaking saved insights.
  */
 export const EXPERIMENTS = {
-  headerUpgradeCta: 'headerUpgradeCta',
+  headerUpgradeCta: 'header_upgrade_cta',
   onboardingSurveyPlacement: 'onboarding_survey_placement',
 } as const
 
@@ -432,7 +432,7 @@ export interface ProjectCreationSimpleVersionConfirmModalOpenedEvent {
   groups: Omit<TelemetryGroups, 'project'>
 }
 
-type OnboardingSurveySurface = 'building_state' | 'project_home' | 'org_form'
+type OnboardingSurveySurface = 'org_form' | 'project_home'
 
 /**
  * Onboarding survey prompt UI became visible.

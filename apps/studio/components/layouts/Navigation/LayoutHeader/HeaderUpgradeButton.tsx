@@ -5,7 +5,6 @@ import { usePHFlag } from '@/hooks/ui/useFlag'
 import { useTrack } from '@/lib/telemetry/track'
 
 const EXPERIMENT_FLAG_KEY = 'headerUpgradeCta'
-const EXPERIMENT_EXPOSURE_NAME = 'header_upgrade_cta'
 type HeaderUpgradeCtaVariant = 'control' | 'test'
 
 interface HeaderUpgradeButtonProps {
@@ -22,7 +21,7 @@ export const HeaderUpgradeButton = ({ className }: HeaderUpgradeButtonProps) => 
   const showButton = flagValue === 'test'
 
   const variant = isFreePlan && isInExperiment ? (flagValue as string) : undefined
-  useTrackExperimentExposure(EXPERIMENT_EXPOSURE_NAME, variant)
+  useTrackExperimentExposure(EXPERIMENT_FLAG_KEY, variant)
 
   if (!isFreePlan) return null
   if (!showButton) return null
