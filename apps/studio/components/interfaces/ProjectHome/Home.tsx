@@ -11,10 +11,8 @@ import { CustomReportSection } from './CustomReportSection'
 import { DEFAULT_SECTION_ORDER, mergeSectionOrder } from './Home.utils'
 import { ProjectUsageSection as ProjectUsageSectionV2 } from './ProjectUsageSection'
 import { ProjectUsageSection as ProjectUsageSectionV1 } from '@/components/interfaces/Home/ProjectUsageSection'
-import {
-  OnboardingSurveyToastPrompt,
-  useOnboardingSurveyPrompt,
-} from '@/components/interfaces/OnboardingSurvey'
+import { OnboardingSurveyToastPrompt } from '@/components/interfaces/OnboardingSurvey/OnboardingSurveyToastPrompt'
+import { useOnboardingSurveyPrompt } from '@/components/interfaces/OnboardingSurvey/useOnboardingSurveyPrompt'
 import { SortableSection } from '@/components/interfaces/ProjectHome/SortableSection'
 import { TopSection } from '@/components/interfaces/ProjectHome/TopSection'
 import { ProjectNeedsSecuring } from '@/components/layouts/ProjectNeedsSecuring/ProjectNeedsSecuring'

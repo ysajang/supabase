@@ -1,5 +1,5 @@
 import { LOCAL_STORAGE_KEYS } from 'common'
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
 
 import type {
@@ -9,6 +9,8 @@ import type {
 } from './OnboardingSurvey.constants'
 import {
   ONBOARDING_SURVEY_EXPERIMENT_ID,
+  ORG_KIND_DEFAULT,
+  ORG_SIZE_DEFAULT,
   variantMatchesSurface,
 } from './OnboardingSurvey.constants'
 import { useOnboardingSurveyMutation } from '@/data/organizations/onboarding-survey-mutation'
@@ -76,6 +78,7 @@ export function useOnboardingSurveyPrompt({ surface }: { surface: OnboardingSurv
     useLocalStorageQuery<OnboardingSurveyPromptState | null>(storageKey, null)
 
   const mutation = useOnboardingSurveyMutation()
+  const hasFiredMutationRef = useRef(false)
 
   const shouldShowPrompt =
     isPromptStateLoaded &&
@@ -90,6 +93,24 @@ export function useOnboardingSurveyPrompt({ surface }: { surface: OnboardingSurv
     setOpen(true)
   }, [shouldShowPrompt])
 
+  // On project_home surfaces (dialog/toast) the org-creation backend side-effect
+  // is skipped, so dismissing without answering would leave no survey row at all.
+  // Fire the mutation with default kind/size so the row exists. Single-fire
+  // guarded by hasFiredMutationRef.
+  const fireDefaultSurvey = useCallback(async () => {
+    if (hasFiredMutationRef.current || !orgSlug) return
+    hasFiredMutationRef.current = true
+    try {
+      await mutation.mutateAsync({
+        slug: orgSlug,
+        kind: ORG_KIND_DEFAULT,
+        size: ORG_SIZE_DEFAULT,
+      })
+    } catch {
+      hasFiredMutationRef.current = false
+    }
+  }, [mutation, orgSlug])
+
   const dismissPrompt = useCallback(
     (reason: DismissReason = 'dialog_dismissed') => {
       if (!shouldShowPrompt) {
@@ -103,8 +124,12 @@ export function useOnboardingSurveyPrompt({ surface }: { surface: OnboardingSurv
       })
       setOpen(false)
       track('onboarding_survey_dismissed', { surface, reason })
+
+      if (surface === 'project_home') {
+        void fireDefaultSurvey()
+      }
     },
-    [setPromptState, shouldShowPrompt, surface, track]
+    [fireDefaultSurvey, setPromptState, shouldShowPrompt, surface, track]
   )
 
   const submitSurvey = useCallback(
@@ -120,12 +145,20 @@ export function useOnboardingSurveyPrompt({ surface }: { surface: OnboardingSurv
       track('onboarding_survey_submit_button_clicked', { surface, hasHeardFrom, hasBuilding })
 
       try {
-        await mutation.mutateAsync({ slug: orgSlug, heard_from, building })
+        hasFiredMutationRef.current = true
+        await mutation.mutateAsync({
+          slug: orgSlug,
+          kind: ORG_KIND_DEFAULT,
+          size: ORG_SIZE_DEFAULT,
+          heard_from,
+          building,
+        })
         setPromptState({ status: 'submitted', updatedAt: new Date().toISOString() })
         setOpen(false)
         if (showSuccessToast) toast.success('Thanks for sharing')
         return true
       } catch {
+        hasFiredMutationRef.current = false
         track('onboarding_survey_submit_failed', { surface, hasHeardFrom, hasBuilding })
         toast.error('Failed to submit. Please try again.')
         return false

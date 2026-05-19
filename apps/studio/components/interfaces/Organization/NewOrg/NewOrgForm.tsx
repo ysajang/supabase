@@ -50,8 +50,8 @@ import {
   ORG_KIND_TYPES,
   ORG_SIZE_DEFAULT,
   ORG_SIZE_TYPES,
-  useOnboardingSurveyPrompt,
-} from '@/components/interfaces/OnboardingSurvey'
+} from '@/components/interfaces/OnboardingSurvey/OnboardingSurvey.constants'
+import { useOnboardingSurveyPrompt } from '@/components/interfaces/OnboardingSurvey/useOnboardingSurveyPrompt'
 import { ProjectCreationCollapsibleSection } from '@/components/interfaces/ProjectCreation/ProjectCreationCollapsibleSection'
 import { InlineLink } from '@/components/ui/InlineLink'
 import Panel from '@/components/ui/Panel'
@@ -181,6 +181,11 @@ export const NewOrgForm = ({
   })
   const showOnboardingSurveyInOrgForm = isOrgFormVariant(onboardingSurveyVariant)
   const showOnboardingSurveyInline = onboardingSurveyVariant === 'org_form_inline'
+  // Skip kind/size on org creation for any variant that will later fire the
+  // survey endpoint — sendOrgCreationSurvey dedupes on (user, org_slug) at the
+  // parent row, so letting both paths fire would swallow the later call.
+  const omitKindFromOrgCreation =
+    onboardingSurveyVariant !== undefined && onboardingSurveyVariant !== 'control'
 
   useEffect(() => {
     if (!showOnboardingSurveyInOrgForm) return
@@ -362,8 +367,12 @@ export const NewOrgForm = ({
       await confirmPendingSubscriptionChange({
         payment_intent_id: paymentIntentConfirmation.paymentIntent.id,
         name: form.getValues('name'),
-        kind: form.getValues('kind'),
-        size: form.getValues('size'),
+        ...(omitKindFromOrgCreation
+          ? {}
+          : {
+              kind: form.getValues('kind'),
+              size: form.getValues('size'),
+            }),
       })
     } else {
       // If the payment intent is not successful, we reset the payment method and show an error
@@ -417,13 +426,17 @@ export const NewOrgForm = ({
 
     createOrganization({
       name: formValues.name,
-      kind: formValues.kind,
+      ...(omitKindFromOrgCreation
+        ? {}
+        : {
+            kind: formValues.kind,
+            ...(formValues.kind == 'COMPANY' ? { size: formValues.size } : {}),
+          }),
       tier: ('tier_' + dbTier.toLowerCase()) as
         | 'tier_payg'
         | 'tier_pro'
         | 'tier_free'
         | 'tier_team',
-      ...(formValues.kind == 'COMPANY' ? { size: formValues.size } : {}),
       payment_method: paymentMethodId,
       billing_name: dbTier === 'FREE' ? undefined : customerData?.billing_name,
       address: dbTier === 'FREE' ? null : customerData?.address,
