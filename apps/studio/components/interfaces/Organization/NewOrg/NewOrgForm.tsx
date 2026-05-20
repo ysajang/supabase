@@ -739,7 +739,7 @@ export const NewOrgForm = ({
             {showOnboardingSurveyInOrgForm ? (
               <ProjectCreationCollapsibleSection
                 title="Help improve Supabase"
-                description="Optional questions to help us improve the Supabase experience"
+                description="Optional questions to help improve the Supabase experience"
                 defaultOpen={showOnboardingSurveyExpanded}
               >
                 {onboardingSurveyFields}
