@@ -473,7 +473,6 @@ export const NewOrgForm = ({
     return onPaymentMethodReset()
   }
 
-  const buildingDescription = 'What are you building?'
   const buildingPlaceholder = BUILDING_PLACEHOLDER
 
   const orgKindField = (
@@ -482,9 +481,11 @@ export const NewOrgForm = ({
       name="kind"
       render={({ field }) => (
         <FormItemLayout
-          label="Type"
+          label={showOnboardingSurveyInOrgForm ? 'Who is this org for?' : 'Type'}
           layout="horizontal"
-          description="What best describes your organization?"
+          description={
+            showOnboardingSurveyInOrgForm ? undefined : 'What best describes your organization?'
+          }
         >
           <FormControl>
             <Select value={field.value} onValueChange={field.onChange}>
@@ -511,11 +512,7 @@ export const NewOrgForm = ({
       control={form.control}
       name="size"
       render={({ field }) => (
-        <FormItemLayout
-          label="Company size"
-          layout="horizontal"
-          description="How many people are in your company?"
-        >
+        <FormItemLayout label="How many people?" layout="horizontal">
           <FormControl>
             <Select value={field.value} onValueChange={field.onChange}>
               <SelectTrigger className="w-full">
@@ -541,7 +538,7 @@ export const NewOrgForm = ({
       control={form.control}
       name="heard_from"
       render={({ field }) => (
-        <FormItemLayout label="Via" layout="horizontal" description="Where did you hear about us?">
+        <FormItemLayout label="Where did you hear about us?" layout="horizontal">
           <FormControl>
             <div className="flex flex-col gap-y-2">
               <Select
@@ -592,7 +589,7 @@ export const NewOrgForm = ({
       control={form.control}
       name="building"
       render={({ field }) => (
-        <FormItemLayout label="Building" layout="horizontal" description={buildingDescription}>
+        <FormItemLayout label="What are you building?" layout="horizontal">
           <FormControl>
             <div className="relative">
               <Textarea
