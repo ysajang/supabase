@@ -16,9 +16,7 @@ import { DOCS_URL, PROJECT_STATUS } from '@/lib/constants'
 export const TopSection = () => {
   const isOrioleDb = useIsOrioleDb()
   const { data: project } = useSelectedProjectQuery()
-  const { data: parentProject } = useProjectDetailQuery({
-    ref: project?.parent_project_ref,
-  })
+  const { data: parentProject } = useProjectDetailQuery({ ref: project?.parent_project_ref })
 
   const { data: branches } = useBranchesQuery({
     projectRef: project?.parent_project_ref ?? project?.ref,

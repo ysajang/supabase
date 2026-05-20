@@ -1,7 +1,7 @@
-import ApiSchema from '~/components/ApiSchema'
 import { XCircle } from 'lucide-react'
-import { useState, type FC, type PropsWithChildren } from 'react'
-import { cn, Collapsible, CollapsibleContent, CollapsibleTrigger } from 'ui'
+import { type FC, type PropsWithChildren, useState } from 'react'
+import { CollapsibleContent, CollapsibleTrigger, Collapsible, cn } from 'ui'
+import ApiSchema from '~/components/ApiSchema'
 
 interface IOptions {
   name?: string
