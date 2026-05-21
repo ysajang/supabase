@@ -48,6 +48,8 @@ import {
   getGraphDataFromTables,
   getLayoutedElementsViaDagre,
   getSchemaAsMarkdown,
+  getEnumsAsMarkdown,
+  getPoliciesAsMarkdown,
 } from './Schemas.utils'
 import { TableNode } from './SchemaTableNode'
 import { useExportSchemaToImage } from './useExportSchemaToImage'
@@ -57,6 +59,8 @@ import SchemaSelector from '@/components/ui/SchemaSelector'
 import { Shortcut } from '@/components/ui/Shortcut'
 import { useSchemasQuery } from '@/data/database/schemas-query'
 import { useTablesQuery } from '@/data/tables/tables-query'
+import { useEnumeratedTypesQuery } from '@/data/enumerated-types/enumerated-types-query'
+import { useDatabasePoliciesQuery } from '@/data/database-policies/database-policies-query'
 import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useLocalStorage } from '@/hooks/misc/useLocalStorage'
 import { useQuerySchemaState } from '@/hooks/misc/useSchemaQueryState'
@@ -130,6 +134,17 @@ export const SchemaGraph = () => {
     includeColumns: true,
   })
   const hasNoTables = isSuccessSchemas && tables.length === 0
+
+  const { data: enumeratedTypes = [] } = useEnumeratedTypesQuery({
+    projectRef: project?.ref,
+    connectionString: project?.connectionString,
+  })
+
+  const { data: policies = [] } = useDatabasePoliciesQuery({
+    projectRef: project?.ref,
+    connectionString: project?.connectionString,
+    schema: selectedSchema,
+  })
 
   const schema = (schemas ?? []).find((s) => s.name === selectedSchema)
   const [, setStoredPositions] = useLocalStorage(
@@ -218,7 +233,31 @@ export const SchemaGraph = () => {
       .getNodes()
       .filter((node) => node.type === 'table')
       .map((node) => node.data as TableNodeData)
-    copyToClipboard(getSchemaAsMarkdown(selectedSchema, tableNodes))
+
+    let markdown = getSchemaAsMarkdown(selectedSchema, tableNodes)
+
+    const enumsMarkdown = getEnumsAsMarkdown(
+      selectedSchema,
+      enumeratedTypes.map((e) => ({ name: e.name, schema: e.schema, enums: e.enums }))
+    )
+    if (enumsMarkdown) markdown += enumsMarkdown
+
+    const policiesMarkdown = getPoliciesAsMarkdown(
+      selectedSchema,
+      policies.map((p) => ({
+        name: p.name,
+        schema: p.schema,
+        table: p.table,
+        command: p.command,
+        roles: p.roles,
+        action: p.action,
+        definition: p.definition ? String(p.definition) : null,
+        check: p.check ? String(p.check) : null,
+      }))
+    )
+    if (policiesMarkdown) markdown += policiesMarkdown
+
+    copyToClipboard(markdown)
     setCopied(true)
     toast.success('Successfully copied as Markdown')
   }
